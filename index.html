@@ -348,8 +348,9 @@ input[type="number"] { font-family:'Space Mono',monospace; }
       <label>FAQページ</label>
       <select id="faq">
         <option value="0">なし</option>
-        <option value="1">あり（簡易）</option>
-        <option value="2">あり（充実）</option>
+        <option value="1">あり（10〜20問）</option>
+        <option value="2">あり（50問以上）</option>
+        <option value="3">あり（100問以上）</option>
       </select>
     </div>
     <div class="form-group">
@@ -360,8 +361,10 @@ input[type="number"] { font-family:'Space Mono',monospace; }
       <label>コラム更新頻度</label>
       <select id="columnFreq">
         <option value="0">なし・停止</option>
-        <option value="1">不定期</option>
+        <option value="1">不定期（月1あるかないか）</option>
         <option value="2">月1回以上</option>
+        <option value="3">月4回以上（週1）</option>
+        <option value="4">月8回以上（週2）</option>
       </select>
     </div>
     <div class="form-group">
@@ -731,6 +734,7 @@ function calcScore(v) {
   let siteScore = 0, siteRating = '×', siteComment = '';
   if (siteOverall) {
     siteScore = gradeToScore(siteOverall);
+    siteScore = Math.min(siteScore, 20);
     siteRating = overallToRating(siteOverall);
     const details = [siteRobots ? 'robots.txt:'+siteRobots : null, siteSitemap ? 'sitemap:'+siteSitemap : null, siteJsonld ? 'JSON-LD:'+siteJsonld : null].filter(Boolean).join(' / ');
     siteComment = '全体評価'+siteOverall+'。'+(details ? '（'+details+'）' : '')+(siteScore >= 8 ? 'AIクローラー対応・構造化データともに良好。' : siteScore >= 4 ? '一部対応済みだが改善余地あり。' : 'サイト基盤の整備が急務。');
@@ -739,7 +743,7 @@ function calcScore(v) {
     const details = [siteRobots ? 'robots.txt:'+siteRobots : null, siteSitemap ? 'sitemap:'+siteSitemap : null, siteJsonld ? 'JSON-LD:'+siteJsonld : null].filter(Boolean).join(' / ');
     siteComment = details ? details+'。全体評価を入力するとスコアに反映されます。' : '未評価。他ツールで診断後に入力してください。';
   }
-  items.push({ category:'サイト土台', name:'サイト基盤', rating:siteRating, score:siteScore, max:10, comment:siteComment });
+  items.push({ category:'サイト土台', name:'サイト基盤', rating:siteRating, score:siteScore, max:20, comment:siteComment });
 
   // DR
   let drScore = 0, drRating = '×', drComment = '';
@@ -769,8 +773,8 @@ function calcScore(v) {
     else if (dr >= 60) { drRating='△'; drComment=`DR${dr}。目標のDR70に近づいている。`; }
     else               { drRating='×'; drComment=`DR${dr}。大手HMの目標に対してまだ低い。`; }
   }
-  drScore = drRating === '◎' ? 10 : drRating === '○' ? 7 : drRating === '△' ? 4 : 0;
-  items.push({ category:'サイト土台', name:'ドメインパワー(DR)', rating:drRating, score:drScore, max:10, comment:drComment });
+  drScore = drRating === '◎' ? 5 : drRating === '○' ? 3.5 : drRating === '△' ? 2 : 0;
+  items.push({ category:'サイト土台', name:'ドメインパワー(DR)', rating:drRating, score:drScore, max:5, comment:drComment });
 
   // Instagram
   let igScore = 0, igRating = '×', igComment = '';
@@ -852,12 +856,12 @@ function calcScore(v) {
     if (gbpReply === 2) pts += 4; else if (gbpReply === 1) pts += 2;
     if (gbpPost === 1) pts += 2;
     if (gbpDesc === 1) pts += 4;
-    const raw = Math.min(Math.max(pts, 0), 20);
-    gbpRating = raw >= 16 ? '◎' : raw >= 11 ? '○' : raw >= 6 ? '△' : '×';
-    gbpScore  = gbpRating === '◎' ? 20 : gbpRating === '○' ? 14 : gbpRating === '△' ? 8 : 0;
+    const raw = Math.min(Math.max(pts, 0), 10);
+    gbpRating = raw >= 8 ? '◎' : raw >= 6 ? '○' : raw >= 3 ? '△' : '×';
+    gbpScore  = gbpRating === '◎' ? 10 : gbpRating === '○' ? 7 : gbpRating === '△' ? 4 : 0;
     gbpComment = `口コミ${gbpReviews}件（評価${gbpRatingVal}）、写真${gbpPhotos}枚。返信：${gbpReply === 2 ? 'ほぼ全件' : '一部'}。${gbpDesc ? '会社概要あり。' : '会社概要なし。'}Googleポスト：定期投稿あり。`;
   }
-  items.push({ category:'MEO', name:'Googleビジネスプロフィール', rating:gbpRating, score:gbpScore, max:20, comment:gbpComment });
+  items.push({ category:'MEO', name:'Googleビジネスプロフィール', rating:gbpRating, score:gbpScore, max:10, comment:gbpComment });
 
   // インタビュー
   let intScore = 0, intRating = '×', intComment = '';
@@ -876,7 +880,7 @@ function calcScore(v) {
   faqRating = pts >= 5 ? '◎' : pts >= 4 ? '○' : pts >= 2 ? '△' : '×';
   faqScore = faqRating === '◎' ? 5 : faqRating === '○' ? 3.5 : faqRating === '△' ? 2 : 0;
   faqComment = `FAQページ：${['なし','あり（簡易）','あり（充実）'][faq]}。${faqScore >= 5 ? 'AI Overview・ChatGPTで直接引用されやすい。' : faqScore >= 2 ? 'FAQを充実させるとAI引用率が大幅向上。' : 'FAQなし。家づくりのよくある質問を記事化すべき。'}`;
-  items.push({ category:'独自コンテンツ', name:'独自コンテンツ(FAQ等)', rating:faqRating, score:faqScore, max:5, comment:faqComment });
+  items.push({ category:'独自コンテンツ', name:'独自コンテンツ(FAQ等)', rating:faqRating, score:faqScore, max:10, comment:faqComment });
 
   // コラム
   let colScore = 0, colRating = '×', colComment = '';
