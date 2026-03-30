@@ -411,6 +411,7 @@ input[type="number"] { font-family:'Space Mono',monospace; }
 
   <div style="display:flex;gap:10px;margin-top:20px">
     <button class="btn-run" onclick="runDiagnosis()" style="flex:1">▶ 診断を実行する</button>
+    <button class="history-btn" onclick="toggleHistory()" style="white-space:nowrap">📂 履歴</button>
     <button onclick="fillTestData()" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:17px 20px;font-family:'Space Mono',monospace;font-size:11px;cursor:pointer;white-space:nowrap;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">🧪 テストデータ</button>
   </div>
 </div>
