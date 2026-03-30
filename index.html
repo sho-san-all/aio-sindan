@@ -518,7 +518,17 @@ async function autoFetchWithGemini() {
   status.style.display = 'block';
   status.style.background = 'rgba(66,133,244,0.08)';
   status.style.color = '#4285f4';
-  status.textContent = '→ 各URLにアクセスして情報を収集中...';
+  status.textContent = '→ Geminiがサイトを分析中... (最大30秒)';
+
+  // ステップ表示アニメーション
+  const steps = ['→ HPにアクセス中...', '→ コンテンツを分析中...', '→ 各項目を評価中...', '→ レポートを生成中...'];
+  let stepIdx = 0;
+  const stepTimer = setInterval(() => {
+    stepIdx = (stepIdx + 1) % steps.length;
+    if (status.style.display !== 'none') {
+      status.textContent = steps[stepIdx];
+    }
+  }, 5000);
 
   const prompt = `あなたはAIO（AI Optimization）の専門家です。
 以下のHPを分析して、取得できる項目を調べてください。
@@ -633,8 +643,12 @@ async function autoFetchWithGemini() {
   } catch(e) {
     status.style.background = 'rgba(200,40,30,0.08)';
     status.style.color = 'var(--red)';
-    status.textContent = '⚠ エラー: ' + e.message;
+    const isTimeout = e.name === 'AbortError';
+    status.textContent = isTimeout
+      ? '⚠ タイムアウト（30秒）。もう一度試してください。'
+      : '⚠ エラー: ' + e.message;
   } finally {
+    clearInterval(stepTimer);
     btn.disabled = false;
     btn.textContent = '✨ Geminiで自動取得';
   }
