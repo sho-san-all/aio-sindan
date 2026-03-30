@@ -869,7 +869,7 @@ function calcScore(v) {
   const items = [];
 
   // サイト基盤
-  const gradeToScore  = g => ({'◎':10,'○':7,'△':4,'×':0,'A':10,'B':7,'C':4,'D':0,'E':0}[g] || 0);
+  const gradeToScore  = g => ({'◎':10,'○':7,'△':4,'×':0,'A':10,'B':7,'C':4,'D':3,'E':0}[g] || 0);
   const overallToRating = g => (['A','B'].includes(g) ? '◎' : g === 'C' ? '△' : g ? '×' : '×');
   let siteScore = 0, siteRating = '×', siteComment = '';
   if (siteOverall) {
