@@ -769,7 +769,7 @@ function loadHistory(id) {
   lastResult = { client: entry.client, result: { items: entry.items, total: entry.total } };
   document.getElementById('clientName').value = entry.client;
   if (entry.hpUrl) document.getElementById('hpUrl').value = entry.hpUrl;
-  renderResults(entry.client, { items: entry.items, total: entry.total }, buildPriorities(entry.items));
+  renderResults(entry.client, { items: entry.items, total: entry.total }, buildPriorities(entry.items), { dr: '' });
   document.getElementById('historyPanel').className = 'history-panel';
   document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
   document.getElementById('gasSection').style.display = 'block';
