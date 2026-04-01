@@ -826,8 +826,8 @@ function calcScore(v) {
     if (gbpPost === 1) pts += 2;
     if (gbpDesc === 2) pts += 4; else if (gbpDesc === 1) pts += 2;
     const raw = Math.min(Math.max(pts, 0), 10);
-    // gbpDesc=1（KW対策なし）は最低△保証
-    gbpRating = (gbpDesc === 1 && raw < 3) ? '△' : (raw >= 8 ? '◎' : raw >= 6 ? '○' : raw >= 3 ? '△' : '×');
+    // gbpDesc=1（KW対策なし）は強制△
+    gbpRating = (gbpDesc === 1) ? '△' : (raw >= 8 ? '◎' : raw >= 6 ? '○' : raw >= 3 ? '△' : '×');
     gbpScore  = gbpRating === '◎' ? 10 : gbpRating === '○' ? 7 : gbpRating === '△' ? 4 : 0;
     const descLabel = gbpDesc === 2 ? '会社概要あり（KW対策済）。' : gbpDesc === 1 ? '会社概要あり（KW対策なし）。' : '会社概要なし。';
     gbpComment = `口コミ${gbpReviews}件（評価${gbpRatingVal}）、写真${gbpPhotos}枚。返信：${gbpReply === 2 ? 'ほぼ全件' : '一部'}。${descLabel}Googleポスト：定期投稿あり。`;
