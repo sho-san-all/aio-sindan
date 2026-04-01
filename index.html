@@ -305,44 +305,74 @@ input[type="number"] { font-family:'Space Mono',monospace; }
   </div>
 
   <div class="section-label">MEO（Googleビジネスプロフィール）</div>
-  <div class="form-grid-3">
-    <div class="form-group">
-      <label>口コミ件数</label>
-      <input type="number" id="gbpReviews" placeholder="例：6" min="0" />
+
+  <!-- 店舗モード切替 -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
+    <label style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap">店舗形態</label>
+    <div class="toggle-group" id="gbpModeGroup">
+      <button class="toggle-btn active" data-val="single" onclick="selectGbpMode(this)">1店舗</button>
+      <button class="toggle-btn" data-val="multi" onclick="selectGbpMode(this)">他店舗あり</button>
     </div>
-    <div class="form-group">
-      <label>平均評価</label>
-      <input type="number" id="gbpRating" placeholder="例：3.7" min="0" max="5" step="0.1" />
-    </div>
-    <div class="form-group">
-      <label>写真枚数</label>
-      <input type="number" id="gbpPhotos" placeholder="例：30" min="0" />
-    </div>
-    <div class="form-group">
-      <label>口コミ返信</label>
-      <select id="gbpReply">
-        <option value="0">ほぼ未返信</option>
-        <option value="-1">更新停止（返信なし）</option>
-        <option value="1">一部返信</option>
-        <option value="2">ほぼ全件返信</option>
+    <input type="hidden" id="gbpMode" value="single" />
+    <!-- 他店舗時：店舗数 -->
+    <div id="gbpStoreCountWrap" style="display:none;align-items:center;gap:8px">
+      <label style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap">店舗数</label>
+      <select id="gbpStoreCount" onchange="renderGbpStores()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;padding:8px 12px;outline:none;width:80px">
+        <option value="2">2店舗</option>
+        <option value="3">3店舗</option>
+        <option value="4">4店舗</option>
+        <option value="5">5店舗</option>
       </select>
     </div>
-    <div class="form-group">
-      <label>会社概要・サービス説明</label>
-      <select id="gbpDesc">
-        <option value="0">なし</option>
-        <option value="1">あり（KW対策なし）</option>
-        <option value="2">あり（KW対策あり・商品登録あり）</option>
-      </select>
+  </div>
+
+  <!-- 1店舗モード -->
+  <div id="gbpSingle">
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label>口コミ件数</label>
+        <input type="number" id="gbpReviews" placeholder="例：6" min="0" />
+      </div>
+      <div class="form-group">
+        <label>平均評価</label>
+        <input type="number" id="gbpRating" placeholder="例：3.7" min="0" max="5" step="0.1" />
+      </div>
+      <div class="form-group">
+        <label>写真枚数</label>
+        <input type="number" id="gbpPhotos" placeholder="例：30" min="0" />
+      </div>
+      <div class="form-group">
+        <label>口コミ返信</label>
+        <select id="gbpReply">
+          <option value="0">ほぼ未返信</option>
+          <option value="-1">更新停止（返信なし）</option>
+          <option value="1">一部返信</option>
+          <option value="2">ほぼ全件返信</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>会社概要・サービス説明</label>
+        <select id="gbpDesc">
+          <option value="0">なし</option>
+          <option value="1">あり（KW対策なし）</option>
+          <option value="2">あり（KW対策あり・商品登録あり）</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>投稿（Googleポスト）</label>
+        <select id="gbpPost">
+          <option value="0">なし</option>
+          <option value="-1">更新停止</option>
+          <option value="1">定期投稿あり</option>
+        </select>
+      </div>
     </div>
-    <div class="form-group">
-      <label>投稿（Googleポスト）</label>
-      <select id="gbpPost">
-        <option value="0">なし</option>
-        <option value="-1">更新停止</option>
-        <option value="1">定期投稿あり</option>
-      </select>
-    </div>
+  </div>
+
+  <!-- 他店舗モード -->
+  <div id="gbpMulti" style="display:none">
+    <p style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.8">⚠ どれか1店舗でも×条件に該当すると全体×になります。<br>各店舗の×条件（ポスト・返信・構築）をチェックしてから数値を入力してください。</p>
+    <div id="gbpStoresContainer"></div>
   </div>
 
   <div class="section-label">独自コンテンツ</div>
@@ -638,6 +668,84 @@ function deleteHistory(id) {
 
 let lastResult = null;
 
+function selectGbpMode(btn) {
+  document.querySelectorAll('#gbpModeGroup .toggle-btn').forEach(b => b.className = 'toggle-btn');
+  btn.className = 'toggle-btn active';
+  const val = btn.getAttribute('data-val');
+  document.getElementById('gbpMode').value = val;
+  if (val === 'multi') {
+    document.getElementById('gbpSingle').style.display = 'none';
+    document.getElementById('gbpMulti').style.display = 'block';
+    document.getElementById('gbpStoreCountWrap').style.display = 'flex';
+    renderGbpStores();
+  } else {
+    document.getElementById('gbpSingle').style.display = 'block';
+    document.getElementById('gbpMulti').style.display = 'none';
+    document.getElementById('gbpStoreCountWrap').style.display = 'none';
+  }
+}
+
+function renderGbpStores() {
+  const count = parseInt(document.getElementById('gbpStoreCount').value) || 2;
+  const container = document.getElementById('gbpStoresContainer');
+  const storeColors = ['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444'];
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    const color = storeColors[i % storeColors.length];
+    html += `
+    <div style="border:1px solid var(--border);border-left:3px solid ${color};border-radius:10px;padding:16px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:${color}">店舗${i+1}</span>
+        <input type="text" id="gbpS${i}_name" placeholder="店舗名（例：本店）" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:6px 10px;outline:none;flex:1" />
+      </div>
+      <div style="background:rgba(200,40,30,0.04);border:1px solid rgba(200,40,30,0.15);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--accent);margin-bottom:8px">× 条件チェック（1つでも該当→全体×）</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="gbpS${i}_ngPost0" onchange="syncGbpNg(${i})" /> Googleポスト投稿なし</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="gbpS${i}_ngPost1" onchange="syncGbpNg(${i})" /> Googleポスト更新停止</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="gbpS${i}_ngReply0" onchange="syncGbpNg(${i})" /> 口コミ返信なし</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="gbpS${i}_ngReply1" onchange="syncGbpNg(${i})" /> 口コミ返信停止</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="gbpS${i}_ngBuild" onchange="syncGbpNg(${i})" /> 初期構築なし</label>
+        </div>
+        <input type="hidden" id="gbpS${i}_post" value="1" />
+        <input type="hidden" id="gbpS${i}_reply" value="2" />
+        <input type="hidden" id="gbpS${i}_desc" value="2" />
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label>口コミ件数</label>
+          <input type="number" id="gbpS${i}_reviews" placeholder="例：15" min="0" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:9px 12px;outline:none;width:100%" />
+        </div>
+        <div class="form-group">
+          <label>平均評価</label>
+          <input type="number" id="gbpS${i}_rating" placeholder="例：4.2" min="0" max="5" step="0.1" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:9px 12px;outline:none;width:100%" />
+        </div>
+        <div class="form-group">
+          <label>写真枚数</label>
+          <input type="number" id="gbpS${i}_photos" placeholder="例：30" min="0" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:9px 12px;outline:none;width:100%" />
+        </div>
+      </div>
+    </div>`;
+  }
+  container.innerHTML = html;
+}
+
+function syncGbpNg(i) {
+  const ngPost0  = document.getElementById(`gbpS${i}_ngPost0`)?.checked;
+  const ngPost1  = document.getElementById(`gbpS${i}_ngPost1`)?.checked;
+  const ngReply0 = document.getElementById(`gbpS${i}_ngReply0`)?.checked;
+  const ngReply1 = document.getElementById(`gbpS${i}_ngReply1`)?.checked;
+  const ngBuild  = document.getElementById(`gbpS${i}_ngBuild`)?.checked;
+  // post: 0=なし, -1=停止, 1=あり
+  const postEl  = document.getElementById(`gbpS${i}_post`);
+  const replyEl = document.getElementById(`gbpS${i}_reply`);
+  const descEl  = document.getElementById(`gbpS${i}_desc`);
+  if (postEl)  postEl.value  = ngPost0 ? '0' : ngPost1 ? '-1' : '1';
+  if (replyEl) replyEl.value = ngReply0 ? '0' : ngReply1 ? '-1' : '2';
+  if (descEl)  descEl.value  = ngBuild ? '0' : '2';
+}
+
+
 function selectScale(btn) {
   document.querySelectorAll('#scaleGroup .toggle-btn').forEach(b => b.className = 'toggle-btn');
   btn.className = 'toggle-btn active';
@@ -677,6 +785,12 @@ function fillTestData() {
   document.getElementById('gbpReply').value = '1';
   document.getElementById('gbpDesc').value = '1';
   document.getElementById('gbpPost').value = '1';
+  // 1店舗モードに戻す
+  document.getElementById('gbpMode').value = 'single';
+  document.querySelectorAll('#gbpModeGroup .toggle-btn').forEach(b => { b.className = 'toggle-btn' + (b.getAttribute('data-val') === 'single' ? ' active' : ''); });
+  document.getElementById('gbpSingle').style.display = 'block';
+  document.getElementById('gbpMulti').style.display = 'none';
+  document.getElementById('gbpStoreCountWrap').style.display = 'none';
   document.getElementById('interviewVideo').value = '1';
   document.getElementById('interviewArticle').value = '1';
   document.getElementById('faq').value = '1';
@@ -841,33 +955,74 @@ function calcScore(v) {
   }
   items.push({ category:'ALL SNS', name:'TikTok', rating:ttRating, score:ttScore, max:5, comment:ttComment });
 
-  // GBP ★ gbpDesc=0 → × 修正済み
+  // GBP（1店舗 or 他店舗対応）
+  const gbpMode = v.gbpMode || 'single';
   let gbpScore = 0, gbpRating = '×', gbpComment = '';
-  const gbpPostNg  = gbpPost === 0 || gbpPost === -1;
-  const gbpReplyNg = gbpReply === 0 || gbpReply === -1;
-  const gbpDescNg  = gbpDesc === 0;
-  if (gbpPostNg || gbpReplyNg || gbpDescNg) {
-    const reasons = [];
-    if (gbpPost === 0)   reasons.push('Googleポスト投稿なし');
-    if (gbpPost === -1)  reasons.push('Googleポスト更新停止');
-    if (gbpReply === 0)  reasons.push('口コミ返信なし');
-    if (gbpReply === -1) reasons.push('口コミ返信停止');
-    if (gbpDesc === 0)   reasons.push('会社概要・サービス説明なし');
-    gbpComment = reasons.join('・')+'のため評価×。即対応が必要。（口コミ'+gbpReviews+'件・評価'+gbpRatingVal+'・写真'+gbpPhotos+'枚）';
-  } else {
+
+  function calcGbpSingle(reviews, ratingVal, photos, reply, desc, post) {
+    const postNg  = post === 0 || post === -1;
+    const replyNg = reply === 0 || reply === -1;
+    const descNg  = desc === 0;
+    if (postNg || replyNg || descNg) {
+      const reasons = [];
+      if (post === 0)   reasons.push('Googleポスト投稿なし');
+      if (post === -1)  reasons.push('Googleポスト更新停止');
+      if (reply === 0)  reasons.push('口コミ返信なし');
+      if (reply === -1) reasons.push('口コミ返信停止');
+      if (desc === 0)   reasons.push('会社概要・サービス説明なし');
+      return { score:0, rating:'×', comment: reasons.join('・')+'のため評価×。即対応が必要。（口コミ'+reviews+'件・評価'+ratingVal+'・写真'+photos+'枚）' };
+    }
     let pts = 0;
-    if (gbpReviews >= 30) pts += 6; else if (gbpReviews >= 20) pts += 5; else if (gbpReviews >= 10) pts += 4; else if (gbpReviews >= 5) pts += 2; else if (gbpReviews >= 1) pts += 1;
-    if (gbpRatingVal >= 4.5) pts += 4; else if (gbpRatingVal >= 4.0) pts += 3; else if (gbpRatingVal >= 3.5) pts += 2; else if (gbpRatingVal >= 3.0) pts += 1;
-    if (gbpPhotos >= 50) pts += 4; else if (gbpPhotos >= 30) pts += 3; else if (gbpPhotos >= 10) pts += 2; else if (gbpPhotos >= 1) pts += 1;
-    if (gbpReply === 2) pts += 4; else if (gbpReply === 1) pts += 2;
-    if (gbpPost === 1) pts += 2;
-    if (gbpDesc === 2) pts += 4; else if (gbpDesc === 1) pts += 2;
+    if (reviews >= 30) pts += 6; else if (reviews >= 20) pts += 5; else if (reviews >= 10) pts += 4; else if (reviews >= 5) pts += 2; else if (reviews >= 1) pts += 1;
+    if (ratingVal >= 4.5) pts += 4; else if (ratingVal >= 4.0) pts += 3; else if (ratingVal >= 3.5) pts += 2; else if (ratingVal >= 3.0) pts += 1;
+    if (photos >= 50) pts += 4; else if (photos >= 30) pts += 3; else if (photos >= 10) pts += 2; else if (photos >= 1) pts += 1;
+    if (reply === 2) pts += 4; else if (reply === 1) pts += 2;
+    if (post === 1) pts += 2;
+    if (desc === 2) pts += 4; else if (desc === 1) pts += 2;
     const raw = Math.min(Math.max(pts, 0), 10);
-    // gbpDesc=1（KW対策なし）は強制△
-    gbpRating = (gbpDesc === 1) ? '△' : (raw >= 8 ? '◎' : raw >= 6 ? '○' : raw >= 3 ? '△' : '×');
-    gbpScore  = gbpRating === '◎' ? 10 : gbpRating === '○' ? 7 : gbpRating === '△' ? 4 : 0;
-    const descLabel = gbpDesc === 2 ? '会社概要あり（KW対策済）。' : gbpDesc === 1 ? '会社概要あり（KW対策なし）。' : '会社概要なし。';
-    gbpComment = `口コミ${gbpReviews}件（評価${gbpRatingVal}）、写真${gbpPhotos}枚。返信：${gbpReply === 2 ? 'ほぼ全件' : '一部'}。${descLabel}Googleポスト：定期投稿あり。`;
+    const rating = (desc === 1) ? '△' : (raw >= 8 ? '◎' : raw >= 6 ? '○' : raw >= 3 ? '△' : '×');
+    const score  = rating === '◎' ? 10 : rating === '○' ? 7 : rating === '△' ? 4 : 0;
+    const descLabel = desc === 2 ? '会社概要あり（KW対策済）。' : '会社概要あり（KW対策なし）。';
+    const comment = `口コミ${reviews}件（評価${ratingVal}）、写真${photos}枚。返信：${reply === 2 ? 'ほぼ全件' : '一部'}。${descLabel}Googleポスト：定期投稿あり。`;
+    return { score, rating, comment };
+  }
+
+  if (gbpMode === 'single') {
+    const gbpReviews   = parseFloat(v.gbpReviews) || 0;
+    const gbpRatingVal = parseFloat(v.gbpRating) || 0;
+    const gbpPhotos    = parseFloat(v.gbpPhotos) || 0;
+    const gbpReply     = v.gbpReply !== '' ? parseInt(v.gbpReply) : 0;
+    const gbpDesc      = parseInt(v.gbpDesc) || 0;
+    const gbpPost      = v.gbpPost !== '' ? parseInt(v.gbpPost) : 0;
+    const r = calcGbpSingle(gbpReviews, gbpRatingVal, gbpPhotos, gbpReply, gbpDesc, gbpPost);
+    gbpScore = r.score; gbpRating = r.rating; gbpComment = r.comment;
+  } else {
+    // 他店舗モード：1店舗でも×なら全体×
+    const stores = v.gbpStores || [];
+    const storeResults = stores.map((s, i) => {
+      const reviews   = parseFloat(s.reviews) || 0;
+      const ratingVal = parseFloat(s.rating) || 0;
+      const photos    = parseFloat(s.photos) || 0;
+      const reply     = s.reply !== '' ? parseInt(s.reply) : 0;
+      const desc      = parseInt(s.desc) || 0;
+      const post      = s.post !== '' ? parseInt(s.post) : 0;
+      return { name: s.name || `店舗${i+1}`, ...calcGbpSingle(reviews, ratingVal, photos, reply, desc, post) };
+    });
+    const hasNg = storeResults.some(r => r.rating === '×');
+    if (hasNg || storeResults.length === 0) {
+      gbpScore = 0; gbpRating = '×';
+      const ngStores = storeResults.filter(r => r.rating === '×').map(r => r.name);
+      gbpComment = ngStores.length > 0
+        ? `【他店舗あり】${ngStores.join('・')}で×条件あり。全体評価×。各店舗の対応が必要。`
+        : '店舗情報が未入力です。';
+    } else {
+      // 全店舗クリアの場合：最低スコアの店舗基準でスコア決定
+      const minScore = Math.min(...storeResults.map(r => r.score));
+      gbpScore  = minScore;
+      gbpRating = gbpScore >= 10 ? '◎' : gbpScore >= 7 ? '○' : gbpScore >= 4 ? '△' : '×';
+      const storesSummary = storeResults.map(r => `${r.name}:${r.rating}(${r.score}点)`).join(' / ');
+      gbpComment = `【他店舗あり・${storeResults.length}店舗】${storesSummary}。全店舗×条件クリア。最低スコア店舗基準で評価。`;
+    }
   }
   items.push({ category:'MEO', name:'Googleビジネスプロフィール', rating:gbpRating, score:gbpScore, max:10, comment:gbpComment });
 
@@ -1036,6 +1191,24 @@ function runDiagnosis() {
     gbpReply: document.getElementById('gbpReply').value,
     gbpDesc: document.getElementById('gbpDesc').value,
     gbpPost: document.getElementById('gbpPost').value,
+    gbpMode: document.getElementById('gbpMode').value,
+    gbpStores: (() => {
+      if (document.getElementById('gbpMode').value !== 'multi') return [];
+      const count = parseInt(document.getElementById('gbpStoreCount').value) || 2;
+      const stores = [];
+      for (let i = 0; i < count; i++) {
+        stores.push({
+          name:    document.getElementById(`gbpS${i}_name`)?.value || `店舗${i+1}`,
+          reviews: document.getElementById(`gbpS${i}_reviews`)?.value || '0',
+          rating:  document.getElementById(`gbpS${i}_rating`)?.value || '0',
+          photos:  document.getElementById(`gbpS${i}_photos`)?.value || '0',
+          reply:   document.getElementById(`gbpS${i}_reply`)?.value || '0',
+          desc:    document.getElementById(`gbpS${i}_desc`)?.value || '0',
+          post:    document.getElementById(`gbpS${i}_post`)?.value || '0',
+        });
+      }
+      return stores;
+    })(),
     interviewVideo: document.getElementById('interviewVideo').value,
     interviewArticle: document.getElementById('interviewArticle').value,
     faq: document.getElementById('faq').value,
