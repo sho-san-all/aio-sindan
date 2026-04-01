@@ -357,6 +357,7 @@ input[type="number"] { font-family:'Space Mono',monospace; }
           <option value="-1">更新停止（返信なし）</option>
           <option value="1">一部返信</option>
           <option value="2">ほぼ全件返信</option>
+          <option value="3">全件返信</option>
         </select>
       </div>
       <div class="form-group">
@@ -1042,14 +1043,14 @@ function calcScore(v) {
     if (reviews >= 30) pts += 6; else if (reviews >= 20) pts += 5; else if (reviews >= 10) pts += 4; else if (reviews >= 5) pts += 2; else if (reviews >= 1) pts += 1;
     if (ratingVal >= 4.5) pts += 4; else if (ratingVal >= 4.0) pts += 3; else if (ratingVal >= 3.5) pts += 2; else if (ratingVal >= 3.0) pts += 1;
     if (photos >= 50) pts += 4; else if (photos >= 30) pts += 3; else if (photos >= 10) pts += 2; else if (photos >= 1) pts += 1;
-    if (reply === 2) pts += 4; else if (reply === 1) pts += 2;
+    if (reply === 3) pts += 6; else if (reply === 2) pts += 4; else if (reply === 1) pts += 2;
     if (post === 1) pts += 2;
     if (desc === 2) pts += 4; else if (desc === 1) pts += 2;
     const raw = Math.min(Math.max(pts, 0), 10);
     const rating = (desc === 1) ? '△' : (raw >= 8 ? '◎' : raw >= 6 ? '○' : raw >= 3 ? '△' : '×');
     const score  = rating === '◎' ? 10 : rating === '○' ? 7 : rating === '△' ? 4 : 0;
     const descLabel = desc === 2 ? '会社概要あり（KW対策済）。' : '会社概要あり（KW対策なし）。';
-    const comment = `口コミ${reviews}件（評価${ratingVal}）、写真${photos}枚。返信：${reply === 2 ? 'ほぼ全件' : '一部'}。${descLabel}Googleポスト：定期投稿あり。`;
+    const comment = `口コミ${reviews}件（評価${ratingVal}）、写真${photos}枚。返信：${reply === 3 ? '全件' : reply === 2 ? 'ほぼ全件' : '一部'}。${descLabel}Googleポスト：定期投稿あり。`;
     return { score, rating, comment };
   }
 
