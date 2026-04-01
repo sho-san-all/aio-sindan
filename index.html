@@ -883,6 +883,7 @@ function calcScore(v) {
   const siteRobots   = v.siteRobots  || '';
   const siteSitemap  = v.siteSitemap || '';
   const siteJsonld   = v.siteJsonld  || '';
+  const siteScoreInput = parseFloat(v.siteScore) || 0;
   const siteOverall  = v.siteOverall || '';
 
   const items = [];
@@ -893,7 +894,7 @@ function calcScore(v) {
   let siteScore = 0, siteRating = '×', siteComment = '';
   if (siteOverall) {
     siteScore = gradeToScore(siteOverall);
-    siteScore = Math.min(siteScore, 20);
+    siteScore = siteScoreInput > 0 ? Math.min(siteScoreInput, 20) : Math.min(gradeToScore(siteOverall), 20);
     siteRating = overallToRating(siteOverall);
     const details = [siteRobots ? 'robots.txt:'+siteRobots : null, siteSitemap ? 'sitemap:'+siteSitemap : null, siteJsonld ? 'JSON-LD:'+siteJsonld : null].filter(Boolean).join(' / ');
     siteComment = '全体評価'+siteOverall+'。'+(details ? '（'+details+'）' : '')+(siteScore >= 8 ? 'AIクローラー対応・構造化データともに良好。' : siteScore >= 4 ? '一部対応済みだが改善余地あり。' : 'サイト基盤の整備が急務。');
@@ -1014,7 +1015,7 @@ function calcScore(v) {
     if (gbpPhotos >= 50) pts += 4; else if (gbpPhotos >= 30) pts += 3; else if (gbpPhotos >= 10) pts += 2; else if (gbpPhotos >= 1) pts += 1;
     if (gbpReply === 2) pts += 4; else if (gbpReply === 1) pts += 2;
     if (gbpPost === 1) pts += 2;
-    if (gbpDesc === 1) pts += 4;
+    if (gbpDesc === 2) pts += 4; else if (gbpDesc === 1) pts += 2;
     const raw = Math.min(Math.max(pts, 0), 10);
     gbpRating = raw >= 8 ? '◎' : raw >= 6 ? '○' : raw >= 3 ? '△' : '×';
     gbpScore  = gbpRating === '◎' ? 10 : gbpRating === '○' ? 7 : gbpRating === '△' ? 4 : 0;
@@ -1182,6 +1183,7 @@ function runDiagnosis() {
     siteSitemap: document.getElementById('siteSitemap').value,
     siteJsonld: document.getElementById('siteJsonld').value,
     siteOverall: document.getElementById('siteOverall').value,
+    siteScore: document.getElementById('siteScore').value,
     igFollowers: document.getElementById('igFollowers').value,
     ytSubs: document.getElementById('ytSubs').value,
     ttFollowers: document.getElementById('ttFollowers').value,
