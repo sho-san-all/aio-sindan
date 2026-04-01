@@ -241,7 +241,7 @@ input[type="number"] { font-family:'Space Mono',monospace; }
   <div class="form-grid-3">
     <div class="form-group">
       <label>Instagram</label>
-      <input type="number" id="igFollowers" placeholder="例：912" min="0" />
+      <input type="number" id="igFollowers" placeholder="例：912" min="0" oninput="calcIgEngagement()" />
     </div>
     <div class="form-group">
       <label>YouTube 登録者数</label>
@@ -273,6 +273,25 @@ input[type="number"] { font-family:'Space Mono',monospace; }
         <option value="1">たまにあり</option>
         <option value="2">定期投稿あり</option>
       </select>
+    </div>
+    <div class="form-group full" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+      <label style="margin-bottom:8px;display:block">Instagram エンゲージメント <span style="font-size:10px;color:var(--muted)">（直近投稿の平均）</span></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px">
+        <div class="form-group" style="margin:0">
+          <label>平均いいね数</label>
+          <input type="number" id="igAvgLikes" placeholder="例：120" min="0" oninput="calcIgEngagement()" />
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>平均保存数</label>
+          <input type="number" id="igAvgSaves" placeholder="例：40" min="0" oninput="calcIgEngagement()" />
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>平均コメント数</label>
+          <input type="number" id="igAvgComments" placeholder="例：5" min="0" oninput="calcIgEngagement()" />
+        </div>
+      </div>
+      <div id="igEngRate" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);min-height:18px"></div>
+      <input type="hidden" id="igEngagement" value="1" />
     </div>
     <div class="form-group">
       <label>YouTube ショーツ</label>
@@ -582,6 +601,10 @@ function saveToHistory() {
       igFollowers: document.getElementById('igFollowers').value,
       igFreq: document.getElementById('igFreq').value,
       igReel: document.getElementById('igReel').value,
+      igEngagement: document.getElementById('igEngagement').value,
+      igAvgLikes: document.getElementById('igAvgLikes').value,
+      igAvgSaves: document.getElementById('igAvgSaves').value,
+      igAvgComments: document.getElementById('igAvgComments').value,
       ytSubs: document.getElementById('ytSubs').value,
       ytShorts: document.getElementById('ytShorts').value,
       ytFreq: document.getElementById('ytFreq').value,
@@ -649,12 +672,13 @@ function loadHistory(id) {
       });
     }
     ['dr','siteRobots','siteSitemap','siteJsonld','siteOverall','siteScore',
-     'igFollowers','igFreq','igReel','ytSubs','ytShorts','ytFreq','ttFollowers','ttFreq',
+     'igFollowers','igFreq','igReel','igEngagement','igAvgLikes','igAvgSaves','igAvgComments','ytSubs','ytShorts','ytFreq','ttFollowers','ttFreq',
      'gbpReviews','gbpRating','gbpPhotos','gbpReply','gbpDesc','gbpPost',
      'interviewVideo','interviewArticle','faq','columnCount','columnFreq','pr'
     ].forEach(id => { if (f[id] !== undefined) document.getElementById(id).value = f[id]; });
   }
   renderResults(entry.client, { items: entry.items, total: entry.total }, buildPriorities(entry.items), { dr: entry.formData?.dr || '' });
+  calcIgEngagement(); // エンゲージメント率表示を復元
   document.getElementById('historyPanel').className = 'history-panel';
   document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
   document.getElementById('gasSection').style.display = 'block';
@@ -746,6 +770,28 @@ function syncGbpNg(i) {
 }
 
 
+function calcIgEngagement() {
+  const followers = parseFloat(document.getElementById('igFollowers').value) || 0;
+  const likes     = parseFloat(document.getElementById('igAvgLikes').value) || 0;
+  const saves     = parseFloat(document.getElementById('igAvgSaves').value) || 0;
+  const comments  = parseFloat(document.getElementById('igAvgComments').value) || 0;
+  const rateEl    = document.getElementById('igEngRate');
+  const hiddenEl  = document.getElementById('igEngagement');
+  if (followers === 0) {
+    rateEl.textContent = 'フォロワー数を入力するとエンゲージメント率が自動計算されます';
+    hiddenEl.value = '1';
+    return;
+  }
+  const rate = ((likes + saves + comments) / followers) * 100;
+  let level, label, color;
+  if      (rate >= 3)   { level = '2';  label = `高い`;  color = 'var(--green)'; }
+  else if (rate >= 1)   { level = '1';  label = `普通`;  color = 'var(--yellow)'; }
+  else if (rate >= 0.5) { level = '0';  label = `低い`;  color = 'var(--red)'; }
+  else                  { level = '-1'; label = `非常に低い`; color = 'var(--red)'; }
+  hiddenEl.value = level;
+  rateEl.innerHTML = `エンゲージメント率：<span style="color:${color};font-weight:700">${rate.toFixed(2)}%</span>　<span style="color:${color}">${label}${parseInt(level) <= 0 ? '（強制△止まり）' : parseInt(level) === 2 ? '（ボーナス）' : ''}</span>`;
+}
+
 function selectScale(btn) {
   document.querySelectorAll('#scaleGroup .toggle-btn').forEach(b => b.className = 'toggle-btn');
   btn.className = 'toggle-btn active';
@@ -774,6 +820,10 @@ function fillTestData() {
   document.getElementById('igFollowers').value = 3500;
   document.getElementById('igFreq').value = '2';
   document.getElementById('igReel').value = '2';
+  document.getElementById('igAvgLikes').value = 200;
+  document.getElementById('igAvgSaves').value = 60;
+  document.getElementById('igAvgComments').value = 8;
+  calcIgEngagement();
   document.getElementById('ytSubs').value = 500;
   document.getElementById('ytShorts').value = '2';
   document.getElementById('ytFreq').value = '2';
@@ -875,6 +925,7 @@ function calcScore(v) {
   items.push({ category:'サイト土台', name:'ドメインパワー(DR)', rating:drRating, score:drScore, max:5, comment:drComment });
 
   // Instagram
+  const igEngagement = v.igEngagement !== undefined ? parseInt(v.igEngagement) : 1;
   let igScore = 0, igRating = '×', igComment = '';
   if (igFollowers === 0 && igFreq === 0) { igComment = '未運用。住宅業界でInstagramは必須チャネル。早急に開始が必要。'; }
   else if (igFreq === -1) { igComment = `フォロワー${igFollowers.toLocaleString()}人だが更新停止中。すぐに投稿再開が必要。`; }
@@ -890,12 +941,21 @@ function calcScore(v) {
     else if (igFollowers >= 500)   pts += 2;
     else pts += 1;
     if (igFreq === 3) pts += 6; else if (igFreq === 2) pts += 4; else if (igFreq === 1) pts += 2;
-    pts += 6;
-    igScore = Math.min(pts, 20);
+    pts += 6; // リール定期投稿ボーナス
+    // エンゲージメント補正
+    if      (igEngagement === 2)  pts += 2;   // 高い → ボーナス
+    else if (igEngagement === 1)  pts += 0;   // 普通 → 変化なし
+    else if (igEngagement === 0)  pts -= 3;   // 低い → 減点
+    else if (igEngagement === -1) pts -= 6;   // 非常に低い → 大きく減点
+    igScore = Math.min(Math.max(pts, 0), 20);
     igRating = igScore >= 15 ? '◎' : igScore >= 11 ? '○' : igScore >= 7 ? '△' : '×';
+    // エンゲージメント低い場合は強制△止まり
+    if (igEngagement <= 0 && (igRating === '◎' || igRating === '○')) igRating = '△';
     igScore = igRating === '◎' ? 20 : igRating === '○' ? 14 : igRating === '△' ? 8 : 0;
     const fl = {'-1':'更新停止','0':'未運用','1':'月1〜3回','2':'週1〜2回','3':'週3回以上'}[String(igFreq)] || '';
-    igComment = `フォロワー${igFollowers.toLocaleString()}人。投稿頻度：${fl}。リール定期投稿あり。${igRating === '◎' ? '非常に良好な運用状態。' : igRating === '○' ? 'もう一歩で◎。フォロワー増加を。' : '強化の余地あり。'}`;
+    const engLabel = {2:'高い（3%以上）',1:'普通（1〜3%）',0:'低い（0.5〜1%）','-1':'非常に低い（0.5%未満）'}[String(igEngagement)] || '';
+    const engNote = igEngagement <= 0 ? `エンゲージメントが${engLabel}ため減点。コンテンツ改善が必要。` : igEngagement === 2 ? 'エンゲージメント良好。' : '';
+    igComment = `フォロワー${igFollowers.toLocaleString()}人。投稿頻度：${fl}。リール定期投稿あり。エンゲージメント：${engLabel}。${engNote}${igRating === '◎' ? '非常に良好な運用状態。' : igRating === '○' ? 'もう一歩で◎。' : igRating === '△' ? '改善余地あり。' : 'エンゲージメント改善が急務。'}`;
   }
   items.push({ category:'ALL SNS', name:'Instagram', rating:igRating, score:igScore, max:20, comment:igComment });
 
@@ -1183,6 +1243,10 @@ function runDiagnosis() {
     ttFollowers: document.getElementById('ttFollowers').value,
     igFreq: document.getElementById('igFreq').value,
     igReel: document.getElementById('igReel').value,
+      igEngagement: document.getElementById('igEngagement').value,
+    igAvgLikes: document.getElementById('igAvgLikes').value,
+    igAvgSaves: document.getElementById('igAvgSaves').value,
+    igAvgComments: document.getElementById('igAvgComments').value,
     ytFreq: document.getElementById('ytFreq').value,
     ttFreq: document.getElementById('ttFreq').value,
     gbpReviews: document.getElementById('gbpReviews').value,
