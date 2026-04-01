@@ -378,11 +378,12 @@ input[type="number"] { font-family:'Space Mono',monospace; }
     <div class="form-group">
       <label>FAQページ</label>
       <select id="faq">
-        <option value="0">なし</option>
-        <option value="1">あり（10〜20問）</option>
-        <option value="2">あり（50問以上）</option>
-        <option value="3">あり（100問以上）</option>
-      </select>
+  <option value="0">なし</option>
+  <option value="-1">あり（KW対策なし・AIO非対応）</option>
+  <option value="1">あり（10〜20問・簡易）</option>
+  <option value="2">あり（50問以上・KW対応）</option>
+  <option value="3">あり（100問以上・KW対応）</option>
+</select>
     </div>
     <div class="form-group">
       <label>コラム・ブログ記事数</label>
