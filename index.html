@@ -275,12 +275,21 @@ input[type="number"] { font-family:'Space Mono',monospace; }
       </select>
     </div>
     <div class="form-group">
-      <label>YouTube 投稿頻度</label>
+      <label>YouTube ショーツ</label>
+      <select id="ytShorts">
+        <option value="0">なし・未運用</option>
+        <option value="1">あり（不定期）</option>
+        <option value="2">あり（月4回以上・週1〜）</option>
+        <option value="3">あり（週2回以上）</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>YouTube 長尺 投稿頻度</label>
       <select id="ytFreq">
-        <option value="0">未運用</option>
+        <option value="0">未運用・なし</option>
         <option value="-1">更新停止（最新投稿なし）</option>
-        <option value="1">不定期</option>
-        <option value="2">月1〜2回</option>
+        <option value="1">不定期（ルームツアーのみ）</option>
+        <option value="2">月1〜2回（インタビュー・専門コンテンツあり）</option>
         <option value="3">週1回以上</option>
       </select>
     </div>
@@ -544,6 +553,7 @@ function saveToHistory() {
       igFreq: document.getElementById('igFreq').value,
       igReel: document.getElementById('igReel').value,
       ytSubs: document.getElementById('ytSubs').value,
+      ytShorts: document.getElementById('ytShorts').value,
       ytFreq: document.getElementById('ytFreq').value,
       ttFollowers: document.getElementById('ttFollowers').value,
       ttFreq: document.getElementById('ttFreq').value,
@@ -609,7 +619,7 @@ function loadHistory(id) {
       });
     }
     ['dr','siteRobots','siteSitemap','siteJsonld','siteOverall','siteScore',
-     'igFollowers','igFreq','igReel','ytSubs','ytFreq','ttFollowers','ttFreq',
+     'igFollowers','igFreq','igReel','ytSubs','ytShorts','ytFreq','ttFollowers','ttFreq',
      'gbpReviews','gbpRating','gbpPhotos','gbpReply','gbpDesc','gbpPost',
      'interviewVideo','interviewArticle','faq','columnCount','columnFreq','pr'
     ].forEach(id => { if (f[id] !== undefined) document.getElementById(id).value = f[id]; });
@@ -657,6 +667,7 @@ function fillTestData() {
   document.getElementById('igFreq').value = '2';
   document.getElementById('igReel').value = '2';
   document.getElementById('ytSubs').value = 500;
+  document.getElementById('ytShorts').value = '2';
   document.getElementById('ytFreq').value = '2';
   document.getElementById('ttFollowers').value = 0;
   document.getElementById('ttFreq').value = '0';
@@ -775,17 +786,43 @@ function calcScore(v) {
   items.push({ category:'ALL SNS', name:'Instagram', rating:igRating, score:igScore, max:20, comment:igComment });
 
   // YouTube
+  const ytShorts = parseInt(v.ytShorts) || 0;
   let ytScore = 0, ytRating = '×', ytComment = '';
-  if (ytFreq === -1) { ytComment = `登録者${ytSubs.toLocaleString()}人だが更新停止中。投稿再開が必要。`; }
-  else if (ytSubs === 0 && ytFreq === 0) { ytComment = '未運用。施工事例や家づくりノウハウ動画はAIに引用されやすい。'; }
-  else {
-    let pts = 0;
-    if (ytSubs >= 1000) pts += 4; else if (ytSubs >= 500) pts += 3; else if (ytSubs >= 100) pts += 2; else pts += 1;
-    if (ytFreq === 3) pts += 6; else if (ytFreq === 2) pts += 4; else if (ytFreq === 1) pts += 2;
-    ytScore = Math.min(pts, 10);
-    ytRating = ytScore >= 8 ? '◎' : ytScore >= 6 ? '○' : ytScore >= 4 ? '△' : '×';
-    ytScore = ytRating === '◎' ? 10 : ytRating === '○' ? 7 : ytRating === '△' ? 4 : 0;
-    ytComment = `登録者${ytSubs.toLocaleString()}人。投稿頻度：${['未運用','不定期','月1〜2回','週1回以上'][ytFreq]}。${ytRating === '◎' ? '良好な運用状態。' : ytRating === '○' ? 'もう一歩で◎。' : '投稿頻度アップで伸びる余地あり。'}`;
+  if (ytShorts === 0) {
+    // ショーツなし → 即×
+    ytScore = 0; ytRating = '×';
+    if (ytSubs === 0 && ytFreq === 0) {
+      ytComment = '未運用。ショーツがないためスコアなし。施工事例や家づくりノウハウ動画はAIに引用されやすい。';
+    } else if (ytFreq === -1) {
+      ytComment = `登録者${ytSubs.toLocaleString()}人だが更新停止中。ショーツがないためスコアなし。投稿再開と合わせてショーツ導入が必要。`;
+    } else {
+      ytComment = `登録者${ytSubs.toLocaleString()}人。ショーツ投稿がないためスコアは×。ショーツを定期的に投稿することでスコアアップが可能。`;
+    }
+  } else {
+    // ショーツあり → 投稿頻度（ショーツ＋長尺）で評価
+    if (ytFreq === -1) {
+      // 長尺更新停止でもショーツがあれば△スタート
+      let pts = 0;
+      if (ytShorts === 3) pts = 5; else if (ytShorts === 2) pts = 4; else pts = 3;
+      if (ytSubs >= 1000) pts += 2; else if (ytSubs >= 500) pts += 1;
+      ytScore = Math.min(pts, 10);
+      ytRating = ytScore >= 8 ? '◎' : ytScore >= 6 ? '○' : ytScore >= 4 ? '△' : '×';
+      ytScore = ytRating === '◎' ? 10 : ytRating === '○' ? 7 : ytRating === '△' ? 4 : 0;
+      ytComment = `登録者${ytSubs.toLocaleString()}人。長尺は更新停止中だがショーツ投稿あり。ショーツ頻度：${['なし','不定期','月4回以上','週2回以上'][ytShorts]}。長尺の再開でさらにスコアアップ可能。`;
+    } else {
+      let pts = 0;
+      if (ytSubs >= 1000) pts += 3; else if (ytSubs >= 500) pts += 2; else if (ytSubs >= 100) pts += 1;
+      // ショーツ頻度
+      if (ytShorts === 3) pts += 4; else if (ytShorts === 2) pts += 3; else if (ytShorts === 1) pts += 1;
+      // 長尺頻度
+      if (ytFreq === 3) pts += 3; else if (ytFreq === 2) pts += 2; else if (ytFreq === 1) pts += 1;
+      ytScore = Math.min(pts, 10);
+      ytRating = ytScore >= 8 ? '◎' : ytScore >= 6 ? '○' : ytScore >= 4 ? '△' : '×';
+      ytScore = ytRating === '◎' ? 10 : ytRating === '○' ? 7 : ytRating === '△' ? 4 : 0;
+      const shortsLabel = ['なし','不定期','月4回以上','週2回以上'][ytShorts];
+      const freqLabel = {'-1':'更新停止','0':'未運用','1':'不定期（ルームツアーのみ）','2':'月1〜2回','3':'週1回以上'}[String(ytFreq)] || '';
+      ytComment = `登録者${ytSubs.toLocaleString()}人。ショーツ：${shortsLabel}／長尺：${freqLabel}。${ytRating === '◎' ? '非常に良好な運用状態。' : ytRating === '○' ? 'もう一歩で◎。ショーツか長尺の頻度アップを。' : ytRating === '△' ? 'ショーツはあるが頻度アップで伸びる余地あり。' : 'ショーツあるが投稿頻度が低い。定期的な投稿を目指して。'}`;
+    }
   }
   items.push({ category:'ALL SNS', name:'YouTube', rating:ytRating, score:ytScore, max:10, comment:ytComment });
 
@@ -987,6 +1024,7 @@ function runDiagnosis() {
     siteScore: document.getElementById('siteScore').value,
     igFollowers: document.getElementById('igFollowers').value,
     ytSubs: document.getElementById('ytSubs').value,
+    ytShorts: document.getElementById('ytShorts').value,
     ttFollowers: document.getElementById('ttFollowers').value,
     igFreq: document.getElementById('igFreq').value,
     igReel: document.getElementById('igReel').value,
