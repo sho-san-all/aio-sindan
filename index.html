@@ -120,6 +120,28 @@ input[type="number"] { font-family:'Space Mono',monospace; }
 .history-item-left p { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); }
 .history-score { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; }
 .history-empty { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); text-align: center; padding: 20px; }
+
+/* ===== アコーディオン ===== */
+.acc { border:1px solid var(--border); border-radius:10px; margin-bottom:10px; overflow:hidden; }
+.acc-hd { display:flex; align-items:center; gap:10px; padding:13px 16px; cursor:pointer; background:var(--surface2); user-select:none; transition:background 0.15s; }
+.acc-hd:hover { background:var(--border); }
+.acc-title { font-family:'Space Mono',monospace; font-size:11px; font-weight:700; color:var(--text); flex:1; }
+.acc-badge { font-family:'Space Mono',monospace; font-size:10px; padding:3px 9px; border-radius:10px; background:var(--border); color:var(--muted); white-space:nowrap; }
+.acc-badge.good { background:rgba(26,122,74,0.12); color:var(--green); }
+.acc-badge.bad  { background:rgba(200,40,30,0.1);  color:var(--red); }
+.acc-badge.mid  { background:rgba(176,120,0,0.1);  color:var(--yellow); }
+.acc-caret { font-size:10px; color:var(--muted); transition:transform 0.2s; flex-shrink:0; }
+.acc-caret.open { transform:rotate(180deg); }
+.acc-bd { padding:14px 16px; display:none; border-top:1px solid var(--border); }
+.acc-bd.open { display:block; }
+.ck { display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; margin-bottom:8px; line-height:1.4; }
+.ck input[type="checkbox"] { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
+.acc-sub { margin-left:22px; padding-left:12px; border-left:2px solid var(--border); margin-bottom:4px; }
+.acc-row2 { display:flex; gap:12px; margin-top:10px; }
+.acc-eng { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px; margin-top:10px; }
+/* ===== /アコーディオン ===== */
+
+.ck input[type="radio"] { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
 </style>
 </head>
 <body>
@@ -237,257 +259,243 @@ input[type="number"] { font-family:'Space Mono',monospace; }
     </div>
   </div>
 
-  <div class="section-label">SNS（フォロワー数）</div>
-  <div class="form-grid-3">
-    <div class="form-group">
-      <label>Instagram</label>
-      <input type="number" id="igFollowers" placeholder="例：912" min="0" oninput="calcIgEngagement()" />
+    <div class="section-label">SNS / MEO / コンテンツ</div>
+
+  <!-- ===== Instagram ===== -->
+  <div class="acc">
+    <div class="acc-hd" onclick="toggleAcc('ig')">
+      <span class="acc-title">Instagram</span>
+      <span class="acc-badge" id="ig-badge">未入力</span>
+      <span class="acc-caret" id="ig-caret">▼</span>
     </div>
-    <div class="form-group">
-      <label>YouTube 登録者数</label>
-      <input type="number" id="ytSubs" placeholder="例：1985" min="0" />
-    </div>
-    <div class="form-group">
-      <label>TikTok</label>
-      <input type="number" id="ttFollowers" placeholder="例：0" min="0" />
+    <div class="acc-bd" id="ig-bd">
+      <label class="ck"><input type="checkbox" id="ig_none" onchange="chkIg()"> 未運用</label>
+      <label class="ck"><input type="checkbox" id="ig_stop" onchange="chkIg()"> 更新停止中</label>
+      <label class="ck"><input type="checkbox" id="ig_reel" onchange="chkIg()"> リール投稿あり</label>
+      <div class="acc-sub" id="ig_reel_sub">
+        <label class="ck"><input type="checkbox" id="ig_reel_stop" onchange="chkIg()"> ┗ 最新投稿なし</label>
+        <label class="ck"><input type="checkbox" id="ig_reel_reg" onchange="chkIg()"> ┗ 定期投稿（週1以上）</label>
+        <label class="ck"><input type="checkbox" id="ig_reel_hi" onchange="chkIg()"> ┗ 週3回以上</label>
+      </div>
+      <label class="ck"><input type="checkbox" id="ig_hl" onchange="chkIg()"> ハイライト設定あり</label>
+      <div class="acc-row2">
+        <div class="form-group" style="flex:1">
+          <label>フォロワー数</label>
+          <input type="number" id="igFollowers" placeholder="例：912" min="0" oninput="chkIg();calcIgEng()">
+        </div>
+      </div>
+      <div class="acc-eng">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);margin-bottom:8px">エンゲージメント（直近投稿の平均）</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px">
+          <div class="form-group" style="margin:0"><label>いいね</label><input type="number" id="igAvgLikes" placeholder="120" min="0" oninput="calcIgEng()"></div>
+          <div class="form-group" style="margin:0"><label>保存</label><input type="number" id="igAvgSaves" placeholder="40" min="0" oninput="calcIgEng()"></div>
+          <div class="form-group" style="margin:0"><label>コメント</label><input type="number" id="igAvgComments" placeholder="5" min="0" oninput="calcIgEng()"></div>
+        </div>
+        <div id="igEngRate" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);min-height:16px"></div>
+        <input type="hidden" id="igEngagement" value="1">
+      </div>
+      <input type="hidden" id="igFreq" value="0">
+      <input type="hidden" id="igReel" value="0">
     </div>
   </div>
 
-  <div class="section-label">SNS 運用状況</div>
-  <div class="form-grid">
-    <div class="form-group">
-      <label>Instagram 投稿頻度</label>
-      <select id="igFreq">
-        <option value="0">未運用</option>
-        <option value="-1">更新停止（最新投稿なし）</option>
-        <option value="1">月1〜3回</option>
-        <option value="2">週1〜2回</option>
-        <option value="3">週3回以上</option>
-      </select>
+  <!-- ===== YouTube ===== -->
+  <div class="acc">
+    <div class="acc-hd" onclick="toggleAcc('yt')">
+      <span class="acc-title">YouTube</span>
+      <span class="acc-badge" id="yt-badge">未入力</span>
+      <span class="acc-caret" id="yt-caret">▼</span>
     </div>
-    <div class="form-group">
-      <label>Instagram リール</label>
-      <select id="igReel">
-        <option value="0">なし</option>
-        <option value="-1">更新停止（最新投稿なし）</option>
-        <option value="1">たまにあり</option>
-        <option value="2">定期投稿あり</option>
-      </select>
-    </div>
-    <div class="form-group full" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
-      <label style="margin-bottom:8px;display:block">Instagram エンゲージメント <span style="font-size:10px;color:var(--muted)">（直近投稿の平均）</span></label>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px">
-        <div class="form-group" style="margin:0">
-          <label>平均いいね数</label>
-          <input type="number" id="igAvgLikes" placeholder="例：120" min="0" oninput="calcIgEngagement()" />
-        </div>
-        <div class="form-group" style="margin:0">
-          <label>平均保存数</label>
-          <input type="number" id="igAvgSaves" placeholder="例：40" min="0" oninput="calcIgEngagement()" />
-        </div>
-        <div class="form-group" style="margin:0">
-          <label>平均コメント数</label>
-          <input type="number" id="igAvgComments" placeholder="例：5" min="0" oninput="calcIgEngagement()" />
+    <div class="acc-bd" id="yt-bd">
+      <label class="ck"><input type="checkbox" id="yt_none" onchange="chkYt()"> 未運用</label>
+      <label class="ck"><input type="checkbox" id="yt_stop" onchange="chkYt()"> 更新停止中</label>
+      <label class="ck"><input type="checkbox" id="yt_shorts" onchange="chkYt()"> YouTubeショーツあり</label>
+      <div class="acc-sub" id="yt_shorts_sub">
+        <label class="ck"><input type="checkbox" id="yt_shorts_stop" onchange="chkYt()"> ┗ 最新投稿なし</label>
+        <label class="ck"><input type="checkbox" id="yt_shorts_w1" onchange="chkYt()"> ┗ 月4回以上（週1〜）</label>
+        <label class="ck"><input type="checkbox" id="yt_shorts_w2" onchange="chkYt()"> ┗ 週2回以上</label>
+      </div>
+      <label class="ck"><input type="checkbox" id="yt_long" onchange="chkYt()"> 長尺動画あり</label>
+      <div class="acc-sub" id="yt_long_sub">
+        <label class="ck"><input type="checkbox" id="yt_long_stop" onchange="chkYt()"> ┗ 最新投稿なし（更新停止）</label>
+        <label class="ck"><input type="checkbox" id="yt_long_room" onchange="chkYt()"> ┗ ルームツアーのみ</label>
+        <label class="ck"><input type="checkbox" id="yt_long_inter" onchange="chkYt()"> ┗ インタビュー・専門コンテンツあり</label>
+        <label class="ck"><input type="checkbox" id="yt_long_w1" onchange="chkYt()"> ┗ 週1回以上</label>
+      </div>
+      <div class="acc-row2">
+        <div class="form-group" style="flex:1">
+          <label>登録者数</label>
+          <input type="number" id="ytSubs" placeholder="例：1985" min="0" oninput="chkYt()">
         </div>
       </div>
-      <div id="igEngRate" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);min-height:18px"></div>
-      <input type="hidden" id="igEngagement" value="1" />
-    </div>
-    <div class="form-group">
-      <label>YouTube ショーツ</label>
-      <select id="ytShorts">
-        <option value="0">なし・未運用</option>
-        <option value="1">あり（不定期）</option>
-        <option value="2">あり（月4回以上・週1〜）</option>
-        <option value="3">あり（週2回以上）</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>YouTube 長尺 投稿頻度</label>
-      <select id="ytFreq">
-        <option value="0">未運用・なし</option>
-        <option value="-1">更新停止（最新投稿なし）</option>
-        <option value="1">不定期（ルームツアーのみ）</option>
-        <option value="2">月1〜2回（インタビュー・専門コンテンツあり）</option>
-        <option value="3">週1回以上</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>TikTok 投稿頻度</label>
-      <select id="ttFreq">
-        <option value="0">未運用</option>
-        <option value="-1">更新停止（最新投稿なし）</option>
-        <option value="1">不定期</option>
-        <option value="2">月4回以上</option>
-      </select>
+      <input type="hidden" id="ytShorts" value="0">
+      <input type="hidden" id="ytFreq" value="0">
     </div>
   </div>
 
-  <div class="section-label">MEO（Googleビジネスプロフィール）</div>
-
-  <!-- 店舗モード切替 -->
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
-    <label style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap">店舗形態</label>
-    <div class="toggle-group" id="gbpModeGroup">
-      <button class="toggle-btn active" data-val="single" onclick="selectGbpMode(this)">1店舗</button>
-      <button class="toggle-btn" data-val="multi" onclick="selectGbpMode(this)">他店舗あり</button>
+  <!-- ===== TikTok ===== -->
+  <div class="acc">
+    <div class="acc-hd" onclick="toggleAcc('tt')">
+      <span class="acc-title">TikTok</span>
+      <span class="acc-badge" id="tt-badge">未入力</span>
+      <span class="acc-caret" id="tt-caret">▼</span>
     </div>
-    <input type="hidden" id="gbpMode" value="single" />
-  </div>
-
-  <!-- 1店舗モード -->
-  <div id="gbpSingle">
-    <div class="form-grid-3">
-      <div class="form-group">
-        <label>口コミ件数</label>
-        <input type="number" id="gbpReviewsMulti" placeholder="例：6" min="0" />
+    <div class="acc-bd" id="tt-bd">
+      <label class="ck"><input type="checkbox" id="tt_none" onchange="chkTt()"> 未運用</label>
+      <label class="ck"><input type="checkbox" id="tt_stop" onchange="chkTt()"> 更新停止中</label>
+      <label class="ck"><input type="checkbox" id="tt_irr" onchange="chkTt()"> 不定期投稿</label>
+      <label class="ck"><input type="checkbox" id="tt_daily" onchange="chkTt()"> 毎日投稿あり</label>
+      <label class="ck"><input type="checkbox" id="tt_m4" onchange="chkTt()"> 月4本以上</label>
+      <div class="acc-row2">
+        <div class="form-group" style="flex:1">
+          <label>フォロワー数</label>
+          <input type="number" id="ttFollowers" placeholder="例：0" min="0" oninput="chkTt()">
+        </div>
       </div>
-      <div class="form-group">
-        <label>平均評価</label>
-        <input type="number" id="gbpRating" placeholder="例：3.7" min="0" max="5" step="0.1" />
-      </div>
-      <div class="form-group">
-        <label>写真枚数</label>
-        <input type="number" id="gbpPhotos" placeholder="例：30" min="0" />
-      </div>
-      <div class="form-group">
-        <label>口コミ返信</label>
-        <select id="gbpReply">
-          <option value="0">ほぼ未返信</option>
-          <option value="-1">更新停止（返信なし）</option>
-          <option value="1">一部返信</option>
-          <option value="2">ほぼ全件返信</option>
-          <option value="3">全件返信</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>会社概要・サービス説明</label>
-        <select id="gbpDesc">
-          <option value="0">なし</option>
-          <option value="1">あり（KW対策なし）</option>
-          <option value="2">あり（KW対策あり・商品登録あり）</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>投稿（Googleポスト）</label>
-        <select id="gbpPost">
-          <option value="0">なし</option>
-          <option value="-1">更新停止</option>
-          <option value="1">定期投稿あり</option>
-        </select>
-      </div>
+      <input type="hidden" id="ttFreq" value="0">
     </div>
   </div>
 
-  <!-- 他店舗モード（FC対応・サマリー入力式） -->
-  <div id="gbpMulti" style="display:none">
-    <div style="background:rgba(200,40,30,0.04);border:1px solid rgba(200,40,30,0.15);border-radius:10px;padding:16px;margin-bottom:14px">
-      <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--accent);margin-bottom:10px">⚠ 1店舗でも×条件に該当 → 全体×</div>
-      <div class="form-grid-3">
-        <div class="form-group">
-          <label>総店舗数</label>
-          <input type="number" id="gbpTotalStores" placeholder="例：12" min="1" oninput="updateGbpNgRate()" />
-        </div>
-        <div class="form-group">
-          <label>Googleポスト未投稿・停止 店舗数</label>
-          <input type="number" id="gbpNgPost" placeholder="例：3" min="0" oninput="updateGbpNgRate()" />
-        </div>
-        <div class="form-group">
-          <label>口コミ返信なし・停止 店舗数</label>
-          <input type="number" id="gbpNgReply" placeholder="例：1" min="0" oninput="updateGbpNgRate()" />
-        </div>
-        <div class="form-group">
-          <label>初期構築なし 店舗数</label>
-          <input type="number" id="gbpNgBuild" placeholder="例：0" min="0" oninput="updateGbpNgRate()" />
-        </div>
-        <div class="form-group" style="grid-column:1/-1">
-          <div id="gbpNgSummary" style="font-family:'Space Mono',monospace;font-size:11px;min-height:18px;padding:8px 12px;background:var(--surface2);border-radius:6px;color:var(--muted)">店舗数を入力すると自動判定します</div>
-        </div>
-      </div>
+  <!-- ===== GBP ===== -->
+  <div class="acc">
+    <div class="acc-hd" onclick="toggleAcc('gbp')">
+      <span class="acc-title">Googleビジネスプロフィール</span>
+      <span class="acc-badge" id="gbp-badge">未入力</span>
+      <span class="acc-caret" id="gbp-caret">▼</span>
     </div>
-    <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);margin-bottom:10px">全店舗クリアの場合 — 代表値で加点計算</div>
-    <div class="form-grid-3">
-      <div class="form-group">
-        <label>口コミ件数（全店舗平均）</label>
-        <input type="number" id="gbpReviews" placeholder="例：15" min="0" />
+    <div class="acc-bd" id="gbp-bd">
+      <!-- 店舗形態トグル -->
+      <div style="display:flex;gap:6px;margin-bottom:14px">
+        <button class="toggle-btn active" id="gbp_single_btn" onclick="setGbpMode('single')">1店舗</button>
+        <button class="toggle-btn" id="gbp_multi_btn" onclick="setGbpMode('multi')">他店舗あり（FC）</button>
       </div>
-      <div class="form-group">
-        <label>平均評価（全店舗平均）</label>
-        <input type="number" id="gbpRatingMulti" placeholder="例：4.1" min="0" max="5" step="0.1" />
+      <input type="hidden" id="gbpMode" value="single">
+
+      <!-- 1店舗 -->
+      <div id="gbp_single_area">
+
+        <div style="margin-bottom:14px">
+          <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);margin-bottom:8px;letter-spacing:1px">GOOGLE ポスト</div>
+          <label class="ck"><input type="radio" name="gbp_post_r" id="gbp_post_r0" value="0" onchange="chkGbp()"> なし</label>
+          <label class="ck"><input type="radio" name="gbp_post_r" id="gbp_post_r1" value="-1" onchange="chkGbp()"> 更新停止</label>
+          <label class="ck"><input type="radio" name="gbp_post_r" id="gbp_post_r2" value="1" onchange="chkGbp()"> 定期投稿あり</label>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);margin-bottom:8px;letter-spacing:1px">口コミ返信</div>
+          <label class="ck"><input type="radio" name="gbp_reply_r" id="gbp_reply_r0" value="0" onchange="chkGbp()"> 返信なし</label>
+          <label class="ck"><input type="radio" name="gbp_reply_r" id="gbp_reply_r1" value="-1" onchange="chkGbp()"> 更新停止</label>
+          <label class="ck"><input type="radio" name="gbp_reply_r" id="gbp_reply_r2" value="1" onchange="chkGbp()"> 一部返信</label>
+          <label class="ck"><input type="radio" name="gbp_reply_r" id="gbp_reply_r3" value="2" onchange="chkGbp()"> ほぼ全件返信</label>
+          <label class="ck"><input type="radio" name="gbp_reply_r" id="gbp_reply_r4" value="3" onchange="chkGbp()"> 全件返信</label>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);margin-bottom:8px;letter-spacing:1px">初期構築</div>
+          <label class="ck"><input type="radio" name="gbp_build_r" id="gbp_build_r0" value="none" onchange="chkGbp()"> なし</label>
+          <label class="ck"><input type="radio" name="gbp_build_r" id="gbp_build_r1" value="some" onchange="chkGbp()"> あり</label>
+          <div class="acc-sub" id="gbp_build_sub" style="display:none">
+            <label class="ck"><input type="checkbox" id="gbp_has_desc" onchange="chkGbp()"> 会社概要あり</label>
+            <label class="ck"><input type="checkbox" id="gbp_has_service" onchange="chkGbp()"> サービスあり</label>
+            <label class="ck"><input type="checkbox" id="gbp_has_product" onchange="chkGbp()"> 商品あり（KW対策済）</label>
+          </div>
+        </div>
+
+        <div class="acc-row2" style="gap:10px">
+          <div class="form-group" style="flex:1"><label>口コミ件数</label><input type="number" id="gbpReviews" placeholder="例：15" min="0" oninput="chkGbp()"></div>
+          <div class="form-group" style="flex:1"><label>平均評価</label><input type="number" id="gbpRating" placeholder="例：4.2" min="0" max="5" step="0.1" oninput="chkGbp()"></div>
+          <div class="form-group" style="flex:1"><label>写真枚数</label><input type="number" id="gbpPhotos" placeholder="例：30" min="0" oninput="chkGbp()"></div>
+        </div>
       </div>
-      <div class="form-group">
-        <label>写真枚数（全店舗平均）</label>
-        <input type="number" id="gbpRatingMulti" placeholder="例：25" min="0" />
+
+      <!-- 多店舗（FC） -->
+      <div id="gbp_multi_area" style="display:none">
+        <div style="background:rgba(200,40,30,0.04);border:1px solid rgba(200,40,30,0.15);border-radius:8px;padding:12px;margin-bottom:12px">
+          <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);margin-bottom:8px">⚠ 1店舗でも×条件に該当 → 全体×</div>
+          <div class="acc-row2" style="gap:10px;flex-wrap:wrap">
+            <div class="form-group" style="flex:1;min-width:120px"><label>総店舗数</label><input type="number" id="gbpTotalStores" placeholder="例：12" min="1" oninput="chkGbpMulti()"></div>
+            <div class="form-group" style="flex:1;min-width:120px"><label>ポスト問題 店舗数</label><input type="number" id="gbpNgPost" placeholder="例：3" min="0" oninput="chkGbpMulti()"></div>
+            <div class="form-group" style="flex:1;min-width:120px"><label>返信問題 店舗数</label><input type="number" id="gbpNgReply" placeholder="例：1" min="0" oninput="chkGbpMulti()"></div>
+            <div class="form-group" style="flex:1;min-width:120px"><label>構築なし 店舗数</label><input type="number" id="gbpNgBuild" placeholder="例：0" min="0" oninput="chkGbpMulti()"></div>
+          </div>
+          <div id="gbpNgSummary" style="font-family:'Space Mono',monospace;font-size:11px;padding:6px 10px;background:var(--surface2);border-radius:5px;margin-top:8px;color:var(--muted)">店舗数を入力すると判定します</div>
+        </div>
+        <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:8px">全店舗クリアの場合 — 代表値で計算</div>
+        <div class="acc-row2" style="gap:10px;flex-wrap:wrap">
+          <div class="form-group" style="flex:1;min-width:120px"><label>口コミ件数（平均）</label><input type="number" id="gbpReviewsM" placeholder="例：15" min="0"></div>
+          <div class="form-group" style="flex:1;min-width:120px"><label>平均評価</label><input type="number" id="gbpRatingM" placeholder="例：4.1" min="0" max="5" step="0.1"></div>
+          <div class="form-group" style="flex:1;min-width:120px"><label>写真枚数（平均）</label><input type="number" id="gbpPhotosM" placeholder="例：25" min="0"></div>
+        </div>
+        <label class="ck"><input type="checkbox" id="gbp_m_reply_ok" onchange="chkGbpMulti()"> ほぼ全店舗で返信あり</label>
+        <label class="ck"><input type="checkbox" id="gbp_m_desc_kw" onchange="chkGbpMulti()"> ほぼ全店舗でKW対策済</label>
       </div>
-      <div class="form-group">
-        <label>口コミ返信（全体の傾向）</label>
-        <select id="gbpReplyMulti">
-          <option value="2">ほぼ全店舗で返信あり</option>
-          <option value="1">一部店舗のみ返信</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>会社概要・商品登録（全体の傾向）</label>
-        <select id="gbpDescMulti">
-          <option value="2">ほぼ全店舗でKW対策済</option>
-          <option value="1">一部店舗のみ対応</option>
-        </select>
-      </div>
+
+      <input type="hidden" id="gbpReply" value="0">
+      <input type="hidden" id="gbpDesc" value="0">
+      <input type="hidden" id="gbpPost" value="0">
     </div>
   </div>
 
-  <div class="section-label">独自コンテンツ</div>
-  <div class="form-grid">
-    <div class="form-group">
-      <label>お施主様インタビュー動画</label>
-      <select id="interviewVideo">
-        <option value="0">なし</option>
-        <option value="1">あり（1〜4本）</option>
-        <option value="2">あり（5本以上）</option>
-      </select>
+  <!-- ===== 独自コンテンツ ===== -->
+  <div class="acc">
+    <div class="acc-hd" onclick="toggleAcc('cont')">
+      <span class="acc-title">独自コンテンツ・FAQ</span>
+      <span class="acc-badge" id="cont-badge">未入力</span>
+      <span class="acc-caret" id="cont-caret">▼</span>
     </div>
-    <div class="form-group">
-      <label>お施主様インタビュー記事</label>
-      <select id="interviewArticle">
-        <option value="0">なし</option>
-        <option value="1">あり（1〜4件）</option>
-        <option value="2">あり（5件以上）</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>FAQページ</label>
-      <select id="faq">
-        <option value="0">なし</option>
-        <option value="-1">あり（KW対策なし・AIO非対応）</option>
-        <option value="1">あり（10〜20問・簡易）</option>
-        <option value="2">あり（50問以上・KW対応）</option>
-        <option value="3">あり（100問以上・KW対応）</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>コラム・ブログ記事数</label>
-      <input type="number" id="columnCount" placeholder="例：5" min="0" />
-    </div>
-    <div class="form-group">
-      <label>コラム更新頻度</label>
-      <select id="columnFreq">
-        <option value="0">なし・停止</option>
-        <option value="-1">スタッフブログのみ</option>
-        <option value="1">コンテンツブログあり・不定期</option>
-        <option value="3">コンテンツブログあり・月4回（週1）</option>
-        <option value="4">コンテンツブログあり・月8回（週2）</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>プレスリリース・メディア掲載</label>
-      <select id="pr">
-        <option value="0">なし</option>
-        <option value="-1">過去にあり（直近なし）</option>
-        <option value="1">直近1〜2件</option>
-        <option value="2">直近年3件以上</option>
-      </select>
+    <div class="acc-bd" id="cont-bd">
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);margin-bottom:8px">お施主様インタビュー</div>
+      <label class="ck"><input type="checkbox" id="int_vid_5" onchange="chkCont()"> 動画5本以上</label>
+      <label class="ck"><input type="checkbox" id="int_vid_1" onchange="chkCont()"> 動画1〜4本</label>
+      <label class="ck"><input type="checkbox" id="int_art_5" onchange="chkCont()"> 記事5件以上</label>
+      <label class="ck"><input type="checkbox" id="int_art_1" onchange="chkCont()"> 記事1〜4件</label>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);margin-top:12px;margin-bottom:8px">FAQページ</div>
+      <label class="ck"><input type="checkbox" id="faq_100" onchange="chkCont()"> 100問以上・KW対応</label>
+      <label class="ck"><input type="checkbox" id="faq_50" onchange="chkCont()"> 50問以上・KW対応</label>
+      <label class="ck"><input type="checkbox" id="faq_20" onchange="chkCont()"> 10〜20問・簡易</label>
+      <label class="ck"><input type="checkbox" id="faq_kw_ng" onchange="chkCont()"> あり・KW対策なし</label>
+      <input type="hidden" id="interviewVideo" value="0">
+      <input type="hidden" id="interviewArticle" value="0">
+      <input type="hidden" id="faq" value="0">
     </div>
   </div>
+
+  <!-- ===== コラム ===== -->
+  <div class="acc">
+    <div class="acc-hd" onclick="toggleAcc('col')">
+      <span class="acc-title">コラム・ブログ</span>
+      <span class="acc-badge" id="col-badge">未入力</span>
+      <span class="acc-caret" id="col-caret">▼</span>
+    </div>
+    <div class="acc-bd" id="col-bd">
+      <label class="ck"><input type="checkbox" id="col_none" onchange="chkCol()"> なし・停止</label>
+      <label class="ck"><input type="checkbox" id="col_staff" onchange="chkCol()"> スタッフブログのみ</label>
+      <label class="ck"><input type="checkbox" id="col_irr" onchange="chkCol()"> コンテンツブログ・不定期</label>
+      <label class="ck"><input type="checkbox" id="col_w1" onchange="chkCol()"> 月4回・週1以上</label>
+      <label class="ck"><input type="checkbox" id="col_w2" onchange="chkCol()"> 月8回・週2以上</label>
+      <div class="acc-row2">
+        <div class="form-group" style="flex:1"><label>記事数</label><input type="number" id="columnCount" placeholder="例：20" min="0" oninput="chkCol()"></div>
+      </div>
+      <input type="hidden" id="columnFreq" value="0">
+    </div>
+  </div>
+
+  <!-- ===== PR ===== -->
+  <div class="acc">
+    <div class="acc-hd" onclick="toggleAcc('pr')">
+      <span class="acc-title">プレスリリース・メディア掲載</span>
+      <span class="acc-badge" id="pr-badge">未入力</span>
+      <span class="acc-caret" id="pr-caret">▼</span>
+    </div>
+    <div class="acc-bd" id="pr-bd">
+      <label class="ck"><input type="checkbox" id="pr_none" onchange="chkPr()"> なし</label>
+      <label class="ck"><input type="checkbox" id="pr_old" onchange="chkPr()"> 過去あり・直近なし</label>
+      <label class="ck"><input type="checkbox" id="pr_1" onchange="chkPr()"> 直近1〜2件</label>
+      <label class="ck"><input type="checkbox" id="pr_3" onchange="chkPr()"> 直近年3件以上</label>
+      <input type="hidden" id="pr" value="0">
+    </div>
+  </div>
+
 
   <div style="display:flex;gap:10px;margin-top:20px">
     <button class="btn-run" onclick="runDiagnosis()" style="flex:1">▶ 診断を実行する</button>
@@ -562,6 +570,278 @@ input[type="number"] { font-family:'Space Mono',monospace; }
 </div>
 </div>
 <script>
+
+// ===== アコーディオン =====
+function toggleAcc(id) {
+  const bd = document.getElementById(id + '-bd');
+  const ca = document.getElementById(id + '-caret');
+  if (bd) bd.classList.toggle('open');
+  if (ca) ca.classList.toggle('open');
+}
+
+// ===== Instagram =====
+function chkIg() {
+  const none    = g('ig_none')?.checked;
+  const stop    = g('ig_stop')?.checked;
+  const reel    = g('ig_reel')?.checked;
+  const reelSt  = g('ig_reel_stop')?.checked;
+  const reelReg = g('ig_reel_reg')?.checked;
+  const reelHi  = g('ig_reel_hi')?.checked;
+  show('ig_reel_sub', reel);
+
+  let freq = '0', reelVal = '0';
+  if (none || !g('ig_none')) { freq = '0'; reelVal = '0'; }
+  else if (stop) { freq = '-1'; reelVal = reel ? (reelReg ? '2' : '1') : '0'; }
+  else {
+    freq = reelHi ? '3' : reelReg ? '2' : '1';
+    reelVal = reel ? (reelReg ? '2' : '1') : '0';
+  }
+  if (reel && reelSt) { freq = '-1'; }
+
+  sv('igFreq', freq); sv('igReel', reelVal);
+
+  const badge = document.getElementById('ig-badge');
+  if (!badge) return;
+  if (none) { badge.textContent='未運用'; badge.className='acc-badge bad'; }
+  else if (stop) { badge.textContent='更新停止'; badge.className='acc-badge bad'; }
+  else if (reel && reelSt) { badge.textContent='× リール停止'; badge.className='acc-badge bad'; }
+  else if (reel && reelReg) { badge.textContent='○ リール定期'; badge.className='acc-badge good'; }
+  else if (reel) { badge.textContent='△ リールあり'; badge.className='acc-badge mid'; }
+  else { badge.textContent='× リールなし'; badge.className='acc-badge bad'; }
+  calcIgEng();
+}
+
+function calcIgEng() {
+  const followers = parseFloat(g('igFollowers')?.value) || 0;
+  const likes  = parseFloat(g('igAvgLikes')?.value) || 0;
+  const saves  = parseFloat(g('igAvgSaves')?.value) || 0;
+  const coms   = parseFloat(g('igAvgComments')?.value) || 0;
+  const rateEl = g('igEngRate');
+  const hidEl  = g('igEngagement');
+  if (!rateEl || !hidEl) return;
+  if (followers === 0) { rateEl.textContent = 'フォロワー数を入力するとエンゲージメント率が自動計算されます'; hidEl.value = '1'; return; }
+  const rate = ((likes + saves + coms) / followers) * 100;
+  let level, label, color;
+  if      (rate >= 3)   { level='2';  label='高い';       color='var(--green)'; }
+  else if (rate >= 1)   { level='1';  label='普通';       color='var(--yellow)'; }
+  else if (rate >= 0.5) { level='0';  label='低い';       color='var(--red)'; }
+  else                  { level='-1'; label='非常に低い'; color='var(--red)'; }
+  hidEl.value = level;
+  rateEl.innerHTML = `エンゲージメント率：<span style="color:${color};font-weight:700">${rate.toFixed(2)}%</span>　<span style="color:${color}">${label}${parseInt(level)<=0?'（強制△止まり）':parseInt(level)===2?'（ボーナス）':''}</span>`;
+}
+
+// ===== YouTube =====
+function chkYt() {
+  const none   = g('yt_none')?.checked;
+  const stop   = g('yt_stop')?.checked;
+  const shorts = g('yt_shorts')?.checked;
+  const sSt    = g('yt_shorts_stop')?.checked;
+  const sW1    = g('yt_shorts_w1')?.checked;
+  const sW2    = g('yt_shorts_w2')?.checked;
+  const longV  = g('yt_long')?.checked;
+  const lSt    = g('yt_long_stop')?.checked;
+  const lRoom  = g('yt_long_room')?.checked;
+  const lInter = g('yt_long_inter')?.checked;
+  const lW1    = g('yt_long_w1')?.checked;
+
+  show('yt_shorts_sub', shorts);
+  show('yt_long_sub', longV);
+
+  let ytS = '0', ytF = '0';
+  if (none) { ytS = '0'; ytF = '0'; }
+  else if (stop) { ytF = '-1'; ytS = shorts && !sSt ? (sW2?'3':sW1?'2':'1') : '0'; }
+  else {
+    ytS = shorts && !sSt ? (sW2?'3':sW1?'2':'1') : '0';
+    ytF = !longV ? '0' : lSt ? '-1' : lW1 ? '3' : lInter ? '2' : lRoom ? '1' : '1';
+  }
+
+  sv('ytShorts', ytS); sv('ytFreq', ytF);
+
+  const badge = document.getElementById('yt-badge');
+  if (!badge) return;
+  if (none) { badge.textContent='未運用'; badge.className='acc-badge bad'; }
+  else if (stop) { badge.textContent='更新停止'; badge.className='acc-badge bad'; }
+  else if (!shorts || sSt) { badge.textContent='× ショーツなし'; badge.className='acc-badge bad'; }
+  else if (sW1 || sW2) { badge.textContent='○ ショーツ定期'; badge.className='acc-badge good'; }
+  else { badge.textContent='△ ショーツあり'; badge.className='acc-badge mid'; }
+}
+
+// ===== TikTok =====
+function chkTt() {
+  const none  = g('tt_none')?.checked;
+  const stop  = g('tt_stop')?.checked;
+  const irr   = g('tt_irr')?.checked;
+  const daily = g('tt_daily')?.checked;
+  const m4    = g('tt_m4')?.checked;
+
+  show('tt_sub', !none);
+
+  let freq = '0';
+  if (none) freq = '0';
+  else if (stop) freq = '-1';
+  else if (daily || m4) freq = '2';
+  else if (irr) freq = '1';
+
+  sv('ttFreq', freq);
+
+  const badge = document.getElementById('tt-badge');
+  if (!badge) return;
+  if (none) { badge.textContent='未運用'; badge.className='acc-badge bad'; }
+  else if (stop) { badge.textContent='更新停止'; badge.className='acc-badge bad'; }
+  else if (daily) { badge.textContent='◎ 毎日投稿'; badge.className='acc-badge good'; }
+  else if (m4) { badge.textContent='○ 月4本以上'; badge.className='acc-badge good'; }
+  else if (irr) { badge.textContent='△ 不定期'; badge.className='acc-badge mid'; }
+  else { badge.textContent='未選択'; badge.className='acc-badge'; }
+}
+
+// ===== GBP =====
+function setGbpMode(mode) {
+  sv('gbpMode', mode);
+  document.getElementById('gbp_single_area').style.display = mode==='single'?'block':'none';
+  document.getElementById('gbp_multi_area').style.display  = mode==='multi'?'block':'none';
+  document.getElementById('gbp_single_btn').className = 'toggle-btn' + (mode==='single'?' active':'');
+  document.getElementById('gbp_multi_btn').className  = 'toggle-btn' + (mode==='multi'?' active':'');
+}
+
+function chkGbp() {
+  // ポスト
+  const postVal = (() => {
+    for (const r of document.querySelectorAll('input[name="gbp_post_r"]')) {
+      if (r.checked) return r.value;
+    }
+    return '0';
+  })();
+
+  // 返信
+  const replyVal = (() => {
+    for (const r of document.querySelectorAll('input[name="gbp_reply_r"]')) {
+      if (r.checked) return r.value;
+    }
+    return '0';
+  })();
+
+  // 初期構築
+  const buildVal = (() => {
+    for (const r of document.querySelectorAll('input[name="gbp_build_r"]')) {
+      if (r.checked) return r.value;
+    }
+    return 'none';
+  })();
+  const buildSub = document.getElementById('gbp_build_sub');
+  if (buildSub) buildSub.style.display = buildVal === 'some' ? 'block' : 'none';
+
+  const hasProduct = document.getElementById('gbp_has_product')?.checked;
+  const hasService = document.getElementById('gbp_has_service')?.checked;
+  const hasDesc    = document.getElementById('gbp_has_desc')?.checked;
+  const descVal = buildVal === 'none' ? '0' : hasProduct ? '2' : '1';
+
+  sv('gbpPost',  postVal);
+  sv('gbpReply', replyVal);
+  sv('gbpDesc',  descVal);
+
+  // バッジ
+  const ng = postVal==='0'||postVal==='-1'||replyVal==='0'||replyVal==='-1'||buildVal==='none';
+  const badge = document.getElementById('gbp-badge');
+  if (!badge) return;
+  if (ng) { badge.textContent='× 要対応あり'; badge.className='acc-badge bad'; }
+  else if (replyVal==='3'||replyVal==='2') { badge.textContent='○ 良好'; badge.className='acc-badge good'; }
+  else { badge.textContent='△ 一部対応'; badge.className='acc-badge mid'; }
+}
+
+function chkGbpMulti() {
+  const total   = parseInt(g('gbpTotalStores')?.value) || 0;
+  const ngPost  = parseInt(g('gbpNgPost')?.value)  || 0;
+  const ngReply = parseInt(g('gbpNgReply')?.value) || 0;
+  const ngBuild = parseInt(g('gbpNgBuild')?.value) || 0;
+  const el = g('gbpNgSummary');
+  if (!el) return;
+  if (total === 0) { el.textContent='店舗数を入力すると判定します'; el.style.color='var(--muted)'; return; }
+  const hasNg = ngPost>0||ngReply>0||ngBuild>0;
+  if (hasNg) {
+    const p=[];
+    if(ngPost>0)p.push(`ポスト問題：${ngPost}店舗`);
+    if(ngReply>0)p.push(`返信問題：${ngReply}店舗`);
+    if(ngBuild>0)p.push(`構築なし：${ngBuild}店舗`);
+    el.innerHTML=`⚠ <span style="color:var(--red);font-weight:700">全体×確定</span>　${p.join('　')}`;
+    el.style.color='var(--red)';
+  } else {
+    el.innerHTML=`✓ <span style="color:var(--green);font-weight:700">全${total}店舗クリア</span>　→ 代表値でスコア計算`;
+    el.style.color='var(--green)';
+  }
+  const badge = document.getElementById('gbp-badge');
+  if (!badge) return;
+  if (hasNg) { badge.textContent='× NG店舗あり'; badge.className='acc-badge bad'; }
+  else if (total > 0) { badge.textContent='○ 全店舗クリア'; badge.className='acc-badge good'; }
+}
+
+// ===== コンテンツ =====
+function chkCont() {
+  const vid5 = g('int_vid_5')?.checked;
+  const vid1 = g('int_vid_1')?.checked;
+  const art5 = g('int_art_5')?.checked;
+  const art1 = g('int_art_1')?.checked;
+  const f100 = g('faq_100')?.checked;
+  const f50  = g('faq_50')?.checked;
+  const f20  = g('faq_20')?.checked;
+  const fKwN = g('faq_kw_ng')?.checked;
+
+  sv('interviewVideo',   vid5?'2':vid1?'1':'0');
+  sv('interviewArticle', art5?'2':art1?'1':'0');
+  sv('faq', f100?'3':f50?'2':f20?'1':fKwN?'-1':'0');
+
+  const badge = document.getElementById('cont-badge');
+  if (!badge) return;
+  const hasInter = vid5||vid1||art5||art1;
+  const hasFaq   = f100||f50||f20;
+  if (f100 && (vid5||art5)) { badge.textContent='◎ 充実'; badge.className='acc-badge good'; }
+  else if (hasFaq || hasInter) { badge.textContent='△〜○'; badge.className='acc-badge mid'; }
+  else { badge.textContent='未入力'; badge.className='acc-badge'; }
+}
+
+// ===== コラム =====
+function chkCol() {
+  const none  = g('col_none')?.checked;
+  const staff = g('col_staff')?.checked;
+  const irr   = g('col_irr')?.checked;
+  const w1    = g('col_w1')?.checked;
+  const w2    = g('col_w2')?.checked;
+
+  const freq = none?'0':staff?'-1':w2?'4':w1?'3':irr?'1':'0';
+  sv('columnFreq', freq);
+
+  const badge = document.getElementById('col-badge');
+  if (!badge) return;
+  if (none||staff) { badge.textContent='× 停止'; badge.className='acc-badge bad'; }
+  else if (w2) { badge.textContent='◎ 週2以上'; badge.className='acc-badge good'; }
+  else if (w1) { badge.textContent='○ 週1以上'; badge.className='acc-badge good'; }
+  else if (irr) { badge.textContent='△ 不定期'; badge.className='acc-badge mid'; }
+  else { badge.textContent='未入力'; badge.className='acc-badge'; }
+}
+
+// ===== PR =====
+function chkPr() {
+  const none = g('pr_none')?.checked;
+  const old  = g('pr_old')?.checked;
+  const p1   = g('pr_1')?.checked;
+  const p3   = g('pr_3')?.checked;
+
+  const val = p3?'2':p1?'1':old?'-1':'0';
+  sv('pr', val);
+
+  const badge = document.getElementById('pr-badge');
+  if (!badge) return;
+  if (p3) { badge.textContent='◎ 年3件以上'; badge.className='acc-badge good'; }
+  else if (p1) { badge.textContent='○ 1〜2件'; badge.className='acc-badge good'; }
+  else if (none||old) { badge.textContent='× なし'; badge.className='acc-badge bad'; }
+  else { badge.textContent='未入力'; badge.className='acc-badge'; }
+}
+
+// ===== ユーティリティ =====
+function g(id) { return document.getElementById(id); }
+function sv(id, val) { const el = g(id); if (el) el.value = val; }
+function show(id, visible) { const el = g(id); if (el) el.style.display = visible ? 'block' : 'none'; }
+// ===== /チェック式UI =====
+
 function saveGeminiKey() {
   const k = document.getElementById('geminiKey').value.trim();
   const s = document.getElementById('geminiKeyStatus');
@@ -643,28 +923,16 @@ function saveToHistory() {
       igFollowers: document.getElementById('igFollowers').value,
       igFreq: document.getElementById('igFreq').value,
       igReel: document.getElementById('igReel').value,
-      igEngagement: document.getElementById('igEngagement').value,
-      igAvgLikes: document.getElementById('igAvgLikes').value,
-      igAvgSaves: document.getElementById('igAvgSaves').value,
-      igAvgComments: document.getElementById('igAvgComments').value,
       ytSubs: document.getElementById('ytSubs').value,
-      ytShorts: document.getElementById('ytShorts').value,
       ytFreq: document.getElementById('ytFreq').value,
       ttFollowers: document.getElementById('ttFollowers').value,
       ttFreq: document.getElementById('ttFreq').value,
-      gbpReviews: (document.getElementById('gbpMode').value === 'multi' ? document.getElementById('gbpReviewsMulti') : document.getElementById('gbpReviews'))?.value || '',
-gbpRating:  (document.getElementById('gbpMode').value === 'multi' ? document.getElementById('gbpRatingMulti')  : document.getElementById('gbpRating'))?.value  || '',
-gbpPhotos:  (document.getElementById('gbpMode').value === 'multi' ? document.getElementById('gbpPhotosMulti')  : document.getElementById('gbpPhotos'))?.value  || '',
+      gbpReviews: document.getElementById('gbpReviews').value,
+      gbpRating: document.getElementById('gbpRating').value,
+      gbpPhotos: document.getElementById('gbpPhotos').value,
       gbpReply: document.getElementById('gbpReply').value,
       gbpDesc: document.getElementById('gbpDesc').value,
       gbpPost: document.getElementById('gbpPost').value,
-      gbpMode: document.getElementById('gbpMode').value,
-      gbpTotalStores: document.getElementById('gbpTotalStores')?.value || '0',
-      gbpNgPost:  document.getElementById('gbpNgPost')?.value  || '0',
-      gbpNgReply: document.getElementById('gbpNgReply')?.value || '0',
-      gbpNgBuild: document.getElementById('gbpNgBuild')?.value || '0',
-      gbpReplyMulti: document.getElementById('gbpReplyMulti')?.value || '2',
-      gbpDescMulti:  document.getElementById('gbpDescMulti')?.value  || '2',
       interviewVideo: document.getElementById('interviewVideo').value,
       interviewArticle: document.getElementById('interviewArticle').value,
       faq: document.getElementById('faq').value,
@@ -721,14 +989,12 @@ function loadHistory(id) {
       });
     }
     ['dr','siteRobots','siteSitemap','siteJsonld','siteOverall','siteScore',
-     'igFollowers','igFreq','igReel','igEngagement','igAvgLikes','igAvgSaves','igAvgComments','ytSubs','ytShorts','ytFreq','ttFollowers','ttFreq',
+     'igFollowers','igFreq','igReel','ytSubs','ytFreq','ttFollowers','ttFreq',
      'gbpReviews','gbpRating','gbpPhotos','gbpReply','gbpDesc','gbpPost',
-     'gbpMode','gbpTotalStores','gbpNgPost','gbpNgReply','gbpNgBuild','gbpReplyMulti','gbpDescMulti',
      'interviewVideo','interviewArticle','faq','columnCount','columnFreq','pr'
     ].forEach(id => { if (f[id] !== undefined) document.getElementById(id).value = f[id]; });
   }
   renderResults(entry.client, { items: entry.items, total: entry.total }, buildPriorities(entry.items), { dr: entry.formData?.dr || '' });
-  calcIgEngagement(); // エンゲージメント率表示を復元
   document.getElementById('historyPanel').className = 'history-panel';
   document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
   document.getElementById('gasSection').style.display = 'block';
@@ -741,64 +1007,6 @@ function deleteHistory(id) {
 }
 
 let lastResult = null;
-
-function selectGbpMode(btn) {
-  document.querySelectorAll('#gbpModeGroup .toggle-btn').forEach(b => b.className = 'toggle-btn');
-  btn.className = 'toggle-btn active';
-  const val = btn.getAttribute('data-val');
-  document.getElementById('gbpMode').value = val;
-  if (val === 'multi') {
-    document.getElementById('gbpSingle').style.display = 'none';
-    document.getElementById('gbpMulti').style.display = 'block';
-  } else {
-    document.getElementById('gbpSingle').style.display = 'block';
-    document.getElementById('gbpMulti').style.display = 'none';
-  }
-}
-
-function updateGbpNgRate() {
-  const total   = parseInt(document.getElementById('gbpTotalStores').value) || 0;
-  const ngPost  = parseInt(document.getElementById('gbpNgPost').value) || 0;
-  const ngReply = parseInt(document.getElementById('gbpNgReply').value) || 0;
-  const ngBuild = parseInt(document.getElementById('gbpNgBuild').value) || 0;
-  const el = document.getElementById('gbpNgSummary');
-  if (total === 0) { el.textContent = '店舗数を入力すると自動判定します'; el.style.color = 'var(--muted)'; return; }
-  const hasNg = ngPost > 0 || ngReply > 0 || ngBuild > 0;
-  if (hasNg) {
-    const parts = [];
-    if (ngPost  > 0) parts.push(`Googleポスト問題：${ngPost}店舗`);
-    if (ngReply > 0) parts.push(`口コミ返信問題：${ngReply}店舗`);
-    if (ngBuild > 0) parts.push(`初期構築なし：${ngBuild}店舗`);
-    el.innerHTML = `⚠ <span style="color:var(--red);font-weight:700">全体評価×確定</span>　${parts.join('　')}`;
-    el.style.color = 'var(--red)';
-  } else {
-    el.innerHTML = `✓ <span style="color:var(--green);font-weight:700">全${total}店舗×条件クリア</span>　→ 下の代表値でスコア計算`;
-    el.style.color = 'var(--green)';
-  }
-}
-
-
-function calcIgEngagement() {
-  const followers = parseFloat(document.getElementById('igFollowers').value) || 0;
-  const likes     = parseFloat(document.getElementById('igAvgLikes').value) || 0;
-  const saves     = parseFloat(document.getElementById('igAvgSaves').value) || 0;
-  const comments  = parseFloat(document.getElementById('igAvgComments').value) || 0;
-  const rateEl    = document.getElementById('igEngRate');
-  const hiddenEl  = document.getElementById('igEngagement');
-  if (followers === 0) {
-    rateEl.textContent = 'フォロワー数を入力するとエンゲージメント率が自動計算されます';
-    hiddenEl.value = '1';
-    return;
-  }
-  const rate = ((likes + saves + comments) / followers) * 100;
-  let level, label, color;
-  if      (rate >= 3)   { level = '2';  label = `高い`;  color = 'var(--green)'; }
-  else if (rate >= 1)   { level = '1';  label = `普通`;  color = 'var(--yellow)'; }
-  else if (rate >= 0.5) { level = '0';  label = `低い`;  color = 'var(--red)'; }
-  else                  { level = '-1'; label = `非常に低い`; color = 'var(--red)'; }
-  hiddenEl.value = level;
-  rateEl.innerHTML = `エンゲージメント率：<span style="color:${color};font-weight:700">${rate.toFixed(2)}%</span>　<span style="color:${color}">${label}${parseInt(level) <= 0 ? '（強制△止まり）' : parseInt(level) === 2 ? '（ボーナス）' : ''}</span>`;
-}
 
 function selectScale(btn) {
   document.querySelectorAll('#scaleGroup .toggle-btn').forEach(b => b.className = 'toggle-btn');
@@ -828,12 +1036,7 @@ function fillTestData() {
   document.getElementById('igFollowers').value = 3500;
   document.getElementById('igFreq').value = '2';
   document.getElementById('igReel').value = '2';
-  document.getElementById('igAvgLikes').value = 200;
-  document.getElementById('igAvgSaves').value = 60;
-  document.getElementById('igAvgComments').value = 8;
-  calcIgEngagement();
   document.getElementById('ytSubs').value = 500;
-  document.getElementById('ytShorts').value = '2';
   document.getElementById('ytFreq').value = '2';
   document.getElementById('ttFollowers').value = 0;
   document.getElementById('ttFreq').value = '0';
@@ -843,11 +1046,6 @@ function fillTestData() {
   document.getElementById('gbpReply').value = '1';
   document.getElementById('gbpDesc').value = '1';
   document.getElementById('gbpPost').value = '1';
-  // 1店舗モードに戻す
-  document.getElementById('gbpMode').value = 'single';
-  document.querySelectorAll('#gbpModeGroup .toggle-btn').forEach(b => { b.className = 'toggle-btn' + (b.getAttribute('data-val') === 'single' ? ' active' : ''); });
-  document.getElementById('gbpSingle').style.display = 'block';
-  document.getElementById('gbpMulti').style.display = 'none';
   document.getElementById('interviewVideo').value = '1';
   document.getElementById('interviewArticle').value = '1';
   document.getElementById('faq').value = '1';
@@ -905,104 +1103,92 @@ function calcScore(v) {
   let drScore = 0, drRating = '×', drComment = '';
   if (dr === 0) { drComment = 'DR未入力。Ahrefsで確認して入力してください。'; }
   else if (scale === 'tiny') {
-    if      (dr >= 10) { drRating='◎'; drComment=`DR${dr}。10棟未満の目標DR10以上を達成。`; }
-    else if (dr >= 5)  { drRating='△'; drComment=`DR${dr}。目標のDR10に近づいている。コンテンツ強化で被リンク獲得を。`; }
-    else               { drRating='×'; drComment=`DR${dr}。非常に低い状態。サイト基盤強化とPR活動が最優先。`; }
+    if      (dr >= 30) { drRating='◎'; drComment=`DR${dr}。10棟未満の目標DR30以上を達成。`; }
+    else if (dr >= 10) { drRating='○'; drComment=`DR${dr}。DR10〜30。目標のDR30に向けて被リンク強化を。`; }
+    else if (dr >= 5)  { drRating='△'; drComment=`DR${dr}。DR5〜9。PR活動でDR10以上を目指す。`; }
+    else               { drRating='×'; drComment=`DR${dr}。DR5未満。サイト基盤強化とPR活動が最優先。`; }
   } else if (scale === 'small') {
-    if      (dr >= 30) { drRating='◎'; drComment=`DR${dr}。10〜50棟の目標DR30以上を達成。`; }
-    else if (dr >= 10) { drRating='△'; drComment=`DR${dr}。目標のDR30に向けて被リンク強化が必要。`; }
-    else               { drRating='×'; drComment=`DR${dr}。10〜50棟の目標に対してまだ低い。PR活動が最優先。`; }
+    if      (dr >= 50) { drRating='◎'; drComment=`DR${dr}。10〜50棟の目標DR50以上を達成。`; }
+    else if (dr >= 30) { drRating='○'; drComment=`DR${dr}。DR30〜49。目標のDR50に向けて強化を。`; }
+    else if (dr >= 10) { drRating='△'; drComment=`DR${dr}。DR10〜29。PRでDR30以上を目指す。`; }
+    else               { drRating='×'; drComment=`DR${dr}。DR10未満。PR活動が最優先。`; }
   } else if (scale === 'mid') {
-    if      (dr >= 50) { drRating='◎'; drComment=`DR${dr}。50棟以上の目標DR50以上を達成。`; }
-    else if (dr >= 41) { drRating='○'; drComment=`DR${dr}。目標のDR50にほぼ到達。あと一歩。`; }
-    else if (dr >= 30) { drRating='△'; drComment=`DR${dr}。目標DR30〜50の下限。PRでDR50を目指す。`; }
-    else               { drRating='×'; drComment=`DR${dr}。50棟以上の目標に対してまだ低い。`; }
+    if      (dr >= 60) { drRating='◎'; drComment=`DR${dr}。50棟以上の目標DR60以上を達成。`; }
+    else if (dr >= 50) { drRating='○'; drComment=`DR${dr}。DR50以上。目標のDR60に向けてあと一歩。`; }
+    else if (dr >= 30) { drRating='△'; drComment=`DR${dr}。DR30〜50。PRでDR50以上を目指す。`; }
+    else               { drRating='×'; drComment=`DR${dr}。DR30未満。50棟以上の目標に対してまだ低い。`; }
   } else if (scale === 'large') {
-    if      (dr >= 60) { drRating='◎'; drComment=`DR${dr}。中堅HMの目標DR50〜を十分達成。`; }
-    else if (dr >= 50) { drRating='○'; drComment=`DR${dr}。中堅HMの目標に到達。さらなる強化を。`; }
-    else if (dr >= 40) { drRating='△'; drComment=`DR${dr}。目標のDR50に近づいている。`; }
-    else               { drRating='×'; drComment=`DR${dr}。中堅HMの目標に対してまだ低い。`; }
+    if      (dr >= 70) { drRating='◎'; drComment=`DR${dr}。中堅HMの目標DR70以上を達成。`; }
+    else if (dr >= 60) { drRating='○'; drComment=`DR${dr}。DR60以上。目標のDR70に向けて強化を。`; }
+    else if (dr >= 40) { drRating='△'; drComment=`DR${dr}。DR40〜59。PRでDR60以上を目指す。`; }
+    else               { drRating='×'; drComment=`DR${dr}。DR40未満。中堅HMの目標に対してまだ低い。`; }
   } else if (scale === 'major') {
-    if      (dr >= 80) { drRating='◎'; drComment=`DR${dr}。大手HMの目標DR70〜を達成。`; }
-    else if (dr >= 70) { drRating='○'; drComment=`DR${dr}。大手HMの目標に到達。`; }
-    else if (dr >= 60) { drRating='△'; drComment=`DR${dr}。目標のDR70に近づいている。`; }
-    else               { drRating='×'; drComment=`DR${dr}。大手HMの目標に対してまだ低い。`; }
+    if      (dr >= 80) { drRating='◎'; drComment=`DR${dr}。大手HMの目標DR80以上を達成。`; }
+    else if (dr >= 70) { drRating='○'; drComment=`DR${dr}。DR70〜79。目標のDR80に向けて強化を。`; }
+    else if (dr >= 60) { drRating='△'; drComment=`DR${dr}。DR60〜69。PRでDR70以上を目指す。`; }
+    else               { drRating='×'; drComment=`DR${dr}。DR60未満。大手HMの目標に対してまだ低い。`; }
   }
   drScore = drRating === '◎' ? 5 : drRating === '○' ? 3.5 : drRating === '△' ? 2 : 0;
   items.push({ category:'サイト土台', name:'ドメインパワー(DR)', rating:drRating, score:drScore, max:5, comment:drComment });
 
-  // Instagram
-  const igEngagement = v.igEngagement !== undefined ? parseInt(v.igEngagement) : 1;
+  // Instagram（エンゲージメント対応）
+  const igEngagement2 = v.igEngagement !== undefined ? parseInt(v.igEngagement) : 1;
   let igScore = 0, igRating = '×', igComment = '';
   if (igFollowers === 0 && igFreq === 0) { igComment = '未運用。住宅業界でInstagramは必須チャネル。早急に開始が必要。'; }
   else if (igFreq === -1) { igComment = `フォロワー${igFollowers.toLocaleString()}人だが更新停止中。すぐに投稿再開が必要。`; }
   else if (igReel !== 2) {
-    const rl = igReel === -1 ? 'リール更新停止' : igReel === 0 ? 'リールなし' : 'リールたまにあり';
+    const rl = igReel===-1?'リール更新停止':igReel===0?'リールなし':'リールたまにあり';
     igComment = `フォロワー${igFollowers.toLocaleString()}人だが${rl}。定期投稿（週2回以上）開始が必要。`;
   } else {
     let pts = 0;
-    if      (igFollowers >= 10000) pts += 8;
-    else if (igFollowers >= 5000)  pts += 6;
-    else if (igFollowers >= 3000)  pts += 5;
-    else if (igFollowers >= 1000)  pts += 3;
-    else if (igFollowers >= 500)   pts += 2;
-    else pts += 1;
-    if (igFreq === 3) pts += 6; else if (igFreq === 2) pts += 4; else if (igFreq === 1) pts += 2;
-    pts += 6; // リール定期投稿ボーナス
-    // エンゲージメント補正
-    if      (igEngagement === 2)  pts += 2;   // 高い → ボーナス
-    else if (igEngagement === 1)  pts += 0;   // 普通 → 変化なし
-    else if (igEngagement === 0)  pts -= 3;   // 低い → 減点
-    else if (igEngagement === -1) pts -= 6;   // 非常に低い → 大きく減点
-    igScore = Math.min(Math.max(pts, 0), 20);
-    igRating = igScore >= 15 ? '◎' : igScore >= 11 ? '○' : igScore >= 7 ? '△' : '×';
-    // エンゲージメント低い場合は強制△止まり
-    if (igEngagement <= 0 && (igRating === '◎' || igRating === '○')) igRating = '△';
-    igScore = igRating === '◎' ? 20 : igRating === '○' ? 14 : igRating === '△' ? 8 : 0;
-    const fl = {'-1':'更新停止','0':'未運用','1':'月1〜3回','2':'週1〜2回','3':'週3回以上'}[String(igFreq)] || '';
-    const engLabel = {2:'高い（3%以上）',1:'普通（1〜3%）',0:'低い（0.5〜1%）','-1':'非常に低い（0.5%未満）'}[String(igEngagement)] || '';
-    const engNote = igEngagement <= 0 ? `エンゲージメントが${engLabel}ため減点。コンテンツ改善が必要。` : igEngagement === 2 ? 'エンゲージメント良好。' : '';
-    igComment = `フォロワー${igFollowers.toLocaleString()}人。投稿頻度：${fl}。リール定期投稿あり。エンゲージメント：${engLabel}。${engNote}${igRating === '◎' ? '非常に良好な運用状態。' : igRating === '○' ? 'もう一歩で◎。' : igRating === '△' ? '改善余地あり。' : 'エンゲージメント改善が急務。'}`;
+    if      (igFollowers>=10000) pts+=8;
+    else if (igFollowers>=5000)  pts+=6;
+    else if (igFollowers>=3000)  pts+=5;
+    else if (igFollowers>=1000)  pts+=3;
+    else if (igFollowers>=500)   pts+=2;
+    else pts+=1;
+    if (igFreq===3) pts+=6; else if (igFreq===2) pts+=4; else if (igFreq===1) pts+=2;
+    pts+=6;
+    if      (igEngagement2===2)  pts+=2;
+    else if (igEngagement2===0)  pts-=3;
+    else if (igEngagement2===-1) pts-=6;
+    igScore = Math.min(Math.max(pts,0),20);
+    igRating = igScore>=15?'◎':igScore>=11?'○':igScore>=7?'△':'×';
+    if (igEngagement2<=0 && (igRating==='◎'||igRating==='○')) igRating='△';
+    igScore = igRating==='◎'?20:igRating==='○'?14:igRating==='△'?8:0;
+    const fl={'-1':'更新停止','0':'未運用','1':'月1〜3回','2':'週1〜2回','3':'週3回以上'}[String(igFreq)]||'';
+    const engLabel={2:'高い（3%以上）',1:'普通（1〜3%）',0:'低い（0.5〜1%）','-1':'非常に低い（0.5%未満）'}[String(igEngagement2)]||'';
+    const engNote = igEngagement2<=0?`エンゲージメントが${engLabel}ため減点。`:igEngagement2===2?'エンゲージメント良好。':'';
+    igComment = `フォロワー${igFollowers.toLocaleString()}人。投稿頻度：${fl}。リール定期投稿あり。エンゲージメント：${engLabel}。${engNote}${igRating==='◎'?'非常に良好。':igRating==='○'?'もう一歩で◎。':igRating==='△'?'改善余地あり。':'エンゲージメント改善が急務。'}`;
   }
   items.push({ category:'ALL SNS', name:'Instagram', rating:igRating, score:igScore, max:20, comment:igComment });
 
-  // YouTube
-  const ytShorts = parseInt(v.ytShorts) || 0;
+  // YouTube（ショーツ対応）
+  const ytShorts2 = parseInt(v.ytShorts) || 0;
   let ytScore = 0, ytRating = '×', ytComment = '';
-  if (ytShorts === 0) {
-    // ショーツなし → 即×
+  if (ytShorts2 === 0) {
     ytScore = 0; ytRating = '×';
-    if (ytSubs === 0 && ytFreq === 0) {
-      ytComment = '未運用。ショーツがないためスコアなし。施工事例や家づくりノウハウ動画はAIに引用されやすい。';
-    } else if (ytFreq === -1) {
-      ytComment = `登録者${ytSubs.toLocaleString()}人だが更新停止中。ショーツがないためスコアなし。投稿再開と合わせてショーツ導入が必要。`;
-    } else {
-      ytComment = `登録者${ytSubs.toLocaleString()}人。ショーツ投稿がないためスコアは×。ショーツを定期的に投稿することでスコアアップが可能。`;
-    }
+    if (ytSubs === 0 && ytFreq === 0) ytComment = '未運用。ショーツがないためスコアなし。';
+    else if (ytFreq === -1) ytComment = `登録者${ytSubs.toLocaleString()}人だが更新停止中。ショーツなしのためスコアなし。`;
+    else ytComment = `登録者${ytSubs.toLocaleString()}人。ショーツ投稿がないためスコアは×。ショーツを定期投稿するとスコアアップ可能。`;
   } else {
-    // ショーツあり → 投稿頻度（ショーツ＋長尺）で評価
     if (ytFreq === -1) {
-      // 長尺更新停止でもショーツがあれば△スタート
-      let pts = 0;
-      if (ytShorts === 3) pts = 5; else if (ytShorts === 2) pts = 4; else pts = 3;
-      if (ytSubs >= 1000) pts += 2; else if (ytSubs >= 500) pts += 1;
-      ytScore = Math.min(pts, 10);
-      ytRating = ytScore >= 8 ? '◎' : ytScore >= 6 ? '○' : ytScore >= 4 ? '△' : '×';
-      ytScore = ytRating === '◎' ? 10 : ytRating === '○' ? 7 : ytRating === '△' ? 4 : 0;
-      ytComment = `登録者${ytSubs.toLocaleString()}人。長尺は更新停止中だがショーツ投稿あり。ショーツ頻度：${['なし','不定期','月4回以上','週2回以上'][ytShorts]}。長尺の再開でさらにスコアアップ可能。`;
+      let pts = ytShorts2===3?5:ytShorts2===2?4:3;
+      if (ytSubs>=1000) pts+=2; else if (ytSubs>=500) pts+=1;
+      ytScore = Math.min(pts,10);
+      ytRating = ytScore>=8?'◎':ytScore>=6?'○':ytScore>=4?'△':'×';
+      ytScore = ytRating==='◎'?10:ytRating==='○'?7:ytRating==='△'?4:0;
+      ytComment = `登録者${ytSubs.toLocaleString()}人。長尺停止中だがショーツあり。長尺再開でさらにスコアアップ可能。`;
     } else {
-      let pts = 0;
-      if (ytSubs >= 1000) pts += 3; else if (ytSubs >= 500) pts += 2; else if (ytSubs >= 100) pts += 1;
-      // ショーツ頻度
-      if (ytShorts === 3) pts += 4; else if (ytShorts === 2) pts += 3; else if (ytShorts === 1) pts += 1;
-      // 長尺頻度
-      if (ytFreq === 3) pts += 3; else if (ytFreq === 2) pts += 2; else if (ytFreq === 1) pts += 1;
-      ytScore = Math.min(pts, 10);
-      ytRating = ytScore >= 8 ? '◎' : ytScore >= 6 ? '○' : ytScore >= 4 ? '△' : '×';
-      ytScore = ytRating === '◎' ? 10 : ytRating === '○' ? 7 : ytRating === '△' ? 4 : 0;
-      const shortsLabel = ['なし','不定期','月4回以上','週2回以上'][ytShorts];
-      const freqLabel = {'-1':'更新停止','0':'未運用','1':'不定期（ルームツアーのみ）','2':'月1〜2回','3':'週1回以上'}[String(ytFreq)] || '';
-      ytComment = `登録者${ytSubs.toLocaleString()}人。ショーツ：${shortsLabel}／長尺：${freqLabel}。${ytRating === '◎' ? '非常に良好な運用状態。' : ytRating === '○' ? 'もう一歩で◎。ショーツか長尺の頻度アップを。' : ytRating === '△' ? 'ショーツはあるが頻度アップで伸びる余地あり。' : 'ショーツあるが投稿頻度が低い。定期的な投稿を目指して。'}`;
+      let pts = ytSubs>=1000?3:ytSubs>=500?2:ytSubs>=100?1:0;
+      if (ytShorts2===3) pts+=4; else if (ytShorts2===2) pts+=3; else if (ytShorts2===1) pts+=1;
+      if (ytFreq===3) pts+=3; else if (ytFreq===2) pts+=2; else if (ytFreq===1) pts+=1;
+      ytScore = Math.min(pts,10);
+      ytRating = ytScore>=8?'◎':ytScore>=6?'○':ytScore>=4?'△':'×';
+      ytScore = ytRating==='◎'?10:ytRating==='○'?7:ytRating==='△'?4:0;
+      const sl = ['なし','不定期','月4回以上','週2回以上'][ytShorts2];
+      const fl = {'-1':'更新停止','0':'未運用','1':'不定期','2':'月1〜2回','3':'週1回以上'}[String(ytFreq)]||'';
+      ytComment = `登録者${ytSubs.toLocaleString()}人。ショーツ：${sl}／長尺：${fl}。${ytRating==='◎'?'非常に良好。':ytRating==='○'?'もう一歩で◎。':ytRating==='△'?'頻度アップで伸びる余地あり。':'ショーツあるが投稿頻度が低い。'}`;
     }
   }
   items.push({ category:'ALL SNS', name:'YouTube', rating:ytRating, score:ytScore, max:10, comment:ytComment });
@@ -1022,7 +1208,7 @@ function calcScore(v) {
   }
   items.push({ category:'ALL SNS', name:'TikTok', rating:ttRating, score:ttScore, max:5, comment:ttComment });
 
-  // GBP（1店舗 or 他店舗対応）
+  // GBP（1店舗 or 多店舗対応）
   const gbpMode = v.gbpMode || 'single';
   let gbpScore = 0, gbpRating = '×', gbpComment = '';
 
@@ -1032,63 +1218,54 @@ function calcScore(v) {
     const descNg  = desc === 0;
     if (postNg || replyNg || descNg) {
       const reasons = [];
-      if (post === 0)   reasons.push('Googleポスト投稿なし');
-      if (post === -1)  reasons.push('Googleポスト更新停止');
-      if (reply === 0)  reasons.push('口コミ返信なし');
-      if (reply === -1) reasons.push('口コミ返信停止');
-      if (desc === 0)   reasons.push('会社概要・サービス説明なし');
+      if (post===0)   reasons.push('Googleポスト投稿なし');
+      if (post===-1)  reasons.push('Googleポスト更新停止');
+      if (reply===0)  reasons.push('口コミ返信なし');
+      if (reply===-1) reasons.push('口コミ返信停止');
+      if (desc===0)   reasons.push('会社概要なし');
       return { score:0, rating:'×', comment: reasons.join('・')+'のため評価×。即対応が必要。（口コミ'+reviews+'件・評価'+ratingVal+'・写真'+photos+'枚）' };
     }
     let pts = 0;
-    if (reviews >= 30) pts += 6; else if (reviews >= 20) pts += 5; else if (reviews >= 10) pts += 4; else if (reviews >= 5) pts += 2; else if (reviews >= 1) pts += 1;
-    if (ratingVal >= 4.5) pts += 4; else if (ratingVal >= 4.0) pts += 3; else if (ratingVal >= 3.5) pts += 2; else if (ratingVal >= 3.0) pts += 1;
-    if (photos >= 50) pts += 4; else if (photos >= 30) pts += 3; else if (photos >= 10) pts += 2; else if (photos >= 1) pts += 1;
-    if (reply === 3) pts += 6; else if (reply === 2) pts += 4; else if (reply === 1) pts += 2;
-    if (post === 1) pts += 2;
-    if (desc === 2) pts += 4; else if (desc === 1) pts += 2;
-    const raw = Math.min(Math.max(pts, 0), 10);
-    const rating = (desc === 1) ? '△' : (raw >= 8 ? '◎' : raw >= 6 ? '○' : raw >= 3 ? '△' : '×');
-    const score  = rating === '◎' ? 10 : rating === '○' ? 7 : rating === '△' ? 4 : 0;
-    const descLabel = desc === 2 ? '会社概要あり（KW対策済）。' : '会社概要あり（KW対策なし）。';
-    const comment = `口コミ${reviews}件（評価${ratingVal}）、写真${photos}枚。返信：${reply === 3 ? '全件' : reply === 2 ? 'ほぼ全件' : '一部'}。${descLabel}Googleポスト：定期投稿あり。`;
+    if (reviews>=30) pts+=6; else if (reviews>=20) pts+=5; else if (reviews>=10) pts+=4; else if (reviews>=5) pts+=2; else if (reviews>=1) pts+=1;
+    if (ratingVal>=4.5) pts+=4; else if (ratingVal>=4.0) pts+=3; else if (ratingVal>=3.5) pts+=2; else if (ratingVal>=3.0) pts+=1;
+    if (photos>=50) pts+=4; else if (photos>=30) pts+=3; else if (photos>=10) pts+=2; else if (photos>=1) pts+=1;
+    if (reply===3) pts+=6; else if (reply===2) pts+=4; else if (reply===1) pts+=2;
+    if (post===1) pts+=2;
+    if (desc===2) pts+=4; else if (desc===1) pts+=2;
+    const raw = Math.min(Math.max(pts,0),10);
+    const rating = (desc===1)?'△':(raw>=8?'◎':raw>=6?'○':raw>=3?'△':'×');
+    const score  = rating==='◎'?10:rating==='○'?7:rating==='△'?4:0;
+    const descLabel = desc===2?'会社概要あり（KW対策済）。':'会社概要あり（KW対策なし）。';
+    const comment = `口コミ${reviews}件（評価${ratingVal}）、写真${photos}枚。返信：${reply===3?'全件':reply===2?'ほぼ全件':'一部'}。${descLabel}Googleポスト：定期投稿あり。`;
     return { score, rating, comment };
   }
 
   if (gbpMode === 'single') {
-    const gbpReviews   = parseFloat(v.gbpReviews) || 0;
-    const gbpRatingVal = parseFloat(v.gbpRating) || 0;
-    const gbpPhotos    = parseFloat(v.gbpPhotos) || 0;
-    const gbpReply     = v.gbpReply !== '' ? parseInt(v.gbpReply) : 0;
-    const gbpDesc      = parseInt(v.gbpDesc) || 0;
-    const gbpPost      = v.gbpPost !== '' ? parseInt(v.gbpPost) : 0;
-    const r = calcGbpSingle(gbpReviews, gbpRatingVal, gbpPhotos, gbpReply, gbpDesc, gbpPost);
-    gbpScore = r.score; gbpRating = r.rating; gbpComment = r.comment;
+    const r = calcGbpSingle(
+      parseFloat(v.gbpReviews)||0, parseFloat(v.gbpRating)||0, parseFloat(v.gbpPhotos)||0,
+      parseInt(v.gbpReply)||0, parseInt(v.gbpDesc)||0, parseInt(v.gbpPost)||0
+    );
+    gbpScore=r.score; gbpRating=r.rating; gbpComment=r.comment;
   } else {
-    // 他店舗モード（FC対応・サマリー入力式）
-    const total   = parseInt(v.gbpTotalStores) || 0;
-    const ngPost  = parseInt(v.gbpNgPost)  || 0;
-    const ngReply = parseInt(v.gbpNgReply) || 0;
-    const ngBuild = parseInt(v.gbpNgBuild) || 0;
-    const hasNg   = ngPost > 0 || ngReply > 0 || ngBuild > 0;
-    if (hasNg || total === 0) {
-      gbpScore = 0; gbpRating = '×';
-      const parts = [];
-      if (ngPost  > 0) parts.push(`Googleポスト問題：${ngPost}店舗`);
-      if (ngReply > 0) parts.push(`口コミ返信問題：${ngReply}店舗`);
-      if (ngBuild > 0) parts.push(`初期構築なし：${ngBuild}店舗`);
-      gbpComment = total === 0
-        ? '【FC・多店舗】店舗数が未入力です。'
-        : `【FC・多店舗 全${total}店舗】${parts.join('・')}のため全体評価×。該当店舗の即対応が必要。`;
+    const total   = parseInt(v.gbpTotalStores)||0;
+    const ngPost  = parseInt(v.gbpNgPost)||0;
+    const ngReply = parseInt(v.gbpNgReply)||0;
+    const ngBuild = parseInt(v.gbpNgBuild)||0;
+    const hasNg   = ngPost>0||ngReply>0||ngBuild>0;
+    if (hasNg||total===0) {
+      gbpScore=0; gbpRating='×';
+      const parts=[];
+      if(ngPost>0)  parts.push(`Googleポスト問題：${ngPost}店舗`);
+      if(ngReply>0) parts.push(`口コミ返信問題：${ngReply}店舗`);
+      if(ngBuild>0) parts.push(`初期構築なし：${ngBuild}店舗`);
+      gbpComment = total===0 ? '【FC・多店舗】店舗数が未入力です。'
+        : `【FC・多店舗 全${total}店舗】${parts.join('・')}のため全体評価×。该当店舗の即対応が必要。`;
     } else {
-      // 全店舗×条件クリア → 代表値でスコア計算
-      const reviews   = parseFloat(v.gbpReviews) || 0;
-      const ratingVal = parseFloat(v.gbpRating)  || 0;
-      const photos    = parseFloat(v.gbpPhotos)   || 0;
-      const reply     = parseInt(v.gbpReplyMulti) || 2;
-      const desc      = parseInt(v.gbpDescMulti)  || 2;
-      const r = calcGbpSingle(reviews, ratingVal, photos, reply, desc, 1);
-      gbpScore  = r.score; gbpRating = r.rating;
-      gbpComment = `【FC・多店舗 全${total}店舗・全店舗×条件クリア】平均口コミ${reviews}件（評価${ratingVal}）、平均写真${photos}枚。${r.comment}`;
+      const reply = parseInt(v.gbpReplyMulti)||2;
+      const desc  = parseInt(v.gbpDescMulti)||2;
+      const r = calcGbpSingle(parseFloat(v.gbpReviews)||0, parseFloat(v.gbpRating)||0, parseFloat(v.gbpPhotos)||0, reply, desc, 1);
+      gbpScore=r.score; gbpRating=r.rating;
+      gbpComment=`【FC・多店舗 全${total}店舗・全店舗クリア】平均口コミ${v.gbpReviews}件（評価${v.gbpRating}）。${r.comment}`;
     }
   }
   items.push({ category:'MEO', name:'Googleビジネスプロフィール', rating:gbpRating, score:gbpScore, max:10, comment:gbpComment });
@@ -1169,7 +1346,7 @@ const SUGGESTIONS = {
   },
   'Googleビジネスプロフィール': {
     good: { status:'口コミ・写真・返信・投稿・会社概要が充実しており、MEO対策が良好。', issue:'さらに口コミ数を増やしGBP引用率を高めたい。', actions:['新規のお客様に口コミ依頼を仕組み化する（完工後のメール・LINE送付）','商品コンテンツ・サービス説明をKWに最適化してGBPを「第二のHP」にする','Googleポストを週1回更新して鮮度を保つ'], aio:'GBPはAI Overviewで地域×業種のクエリに最も引用されるソース。口コミ数・評価・更新頻度が高いGBPはAIに優先引用される。' },
-    mid:  { status:'一部対応済みだが口コミ数・投稿・返信・会社概要が不十分。', issue:'GBPの充実度が低くAI引用の機会を逃している。', actions:['Googleポストを週1回以上更新する（イベント・施工事例・お知らせ）','完工後のメール・LINEでお客様に口コミ依頼を仕組み化する','会社概要にKWを含めて記載し商品登録も追加する'], aio:'「地域×注文住宅」クエリでAI Overviewが引用するのは主にGBP。口コミ返信・定期投稿・写真充実の3点セットが最短で効果が出る施策。' },
+    mid:  { status:'一部対応済みだが口コミ数・投稿・返信・会社概要が不十分。', issue:'GBPの充実度が低くAI引用の機会を逃している。', actions:['全口コミに48時間以内に返信する仕組みを作る','Googleポストを週1回以上更新する（イベント・施工事例・お知らせ）','会社概要にKWを含めて記載し商品登録も追加する'], aio:'「地域×注文住宅」クエリでAI Overviewが引用するのは主にGBP。口コミ返信・定期投稿・写真充実の3点セットが最短で効果が出る施策。' },
     bad:  { status:'会社概要なし・投稿なし・返信なしのため評価×。', issue:'GBPが放置状態でAIに引用されず、競合に大差をつけられている。', actions:['まず会社概要・サービス説明を記入する（KW含めて300文字以上）','全口コミに返信する（1〜2時間で完了）','Googleポストを今日から始める（施工事例写真1枚＋コメントだけでOK）'], aio:'GBPの放置は地域検索でのAI引用機会をゼロにする。会社概要の記入・口コミ返信・Googleポスト投稿は今日から始められる最優先施策。' }
   },
   'お施主様インタビュー': {
@@ -1245,37 +1422,37 @@ function runDiagnosis() {
     siteOverall: document.getElementById('siteOverall').value,
     siteScore: document.getElementById('siteScore').value,
     igFollowers: document.getElementById('igFollowers').value,
-    ytSubs: document.getElementById('ytSubs').value,
-    ytShorts: document.getElementById('ytShorts').value,
-    ttFollowers: document.getElementById('ttFollowers').value,
     igFreq: document.getElementById('igFreq').value,
     igReel: document.getElementById('igReel').value,
-      igEngagement: document.getElementById('igEngagement').value,
+    igEngagement: document.getElementById('igEngagement').value,
     igAvgLikes: document.getElementById('igAvgLikes').value,
     igAvgSaves: document.getElementById('igAvgSaves').value,
     igAvgComments: document.getElementById('igAvgComments').value,
+    ytSubs: document.getElementById('ytSubs').value,
+    ytShorts: document.getElementById('ytShorts').value,
     ytFreq: document.getElementById('ytFreq').value,
+    ttFollowers: document.getElementById('ttFollowers').value,
     ttFreq: document.getElementById('ttFreq').value,
-    gbpReviews: (document.getElementById('gbpMode').value === 'multi' ? document.getElementById('gbpReviewsMulti') : document.getElementById('gbpReviews'))?.value || '',
-gbpRating:  (document.getElementById('gbpMode').value === 'multi' ? document.getElementById('gbpRatingMulti')  : document.getElementById('gbpRating'))?.value  || '',
-gbpPhotos:  (document.getElementById('gbpMode').value === 'multi' ? document.getElementById('gbpPhotosMulti')  : document.getElementById('gbpPhotos'))?.value  || '',
+    gbpReviews: document.getElementById('gbpMode').value==='multi' ? document.getElementById('gbpReviewsM')?.value||'0' : document.getElementById('gbpReviews')?.value||'0',
+    gbpRating:  document.getElementById('gbpMode').value==='multi' ? document.getElementById('gbpRatingM')?.value||'0'  : document.getElementById('gbpRating')?.value||'0',
+    gbpPhotos:  document.getElementById('gbpMode').value==='multi' ? document.getElementById('gbpPhotosM')?.value||'0'  : document.getElementById('gbpPhotos')?.value||'0',
     gbpReply: document.getElementById('gbpReply').value,
-    gbpDesc: document.getElementById('gbpDesc').value,
-    gbpPost: document.getElementById('gbpPost').value,
-    gbpMode: document.getElementById('gbpMode').value,
-    gbpTotalStores: document.getElementById('gbpTotalStores')?.value || '0',
-    gbpNgPost:  document.getElementById('gbpNgPost')?.value  || '0',
-    gbpNgReply: document.getElementById('gbpNgReply')?.value || '0',
-    gbpNgBuild: document.getElementById('gbpNgBuild')?.value || '0',
-    gbpReplyMulti: document.getElementById('gbpReplyMulti')?.value || '2',
-    gbpDescMulti:  document.getElementById('gbpDescMulti')?.value  || '2',
-    interviewVideo: document.getElementById('interviewVideo').value,
+    gbpDesc:  document.getElementById('gbpDesc').value,
+    gbpPost:  document.getElementById('gbpPost').value,
+    gbpMode:  document.getElementById('gbpMode').value,
+    gbpTotalStores: document.getElementById('gbpTotalStores')?.value||'0',
+    gbpNgPost:  document.getElementById('gbpNgPost')?.value||'0',
+    gbpNgReply: document.getElementById('gbpNgReply')?.value||'0',
+    gbpNgBuild: document.getElementById('gbpNgBuild')?.value||'0',
+    gbpReplyMulti: document.getElementById('gbp_m_reply_ok')?.checked ? '2' : '1',
+    gbpDescMulti:  document.getElementById('gbp_m_desc_kw')?.checked  ? '2' : '1',
+    interviewVideo:   document.getElementById('interviewVideo').value,
     interviewArticle: document.getElementById('interviewArticle').value,
-    faq: document.getElementById('faq').value,
+    faq:         document.getElementById('faq').value,
     columnCount: document.getElementById('columnCount').value,
-    columnFreq: document.getElementById('columnFreq').value,
-    pr: document.getElementById('pr').value,
-  };
+    columnFreq:  document.getElementById('columnFreq').value,
+    pr:          document.getElementById('pr').value,
+  }
   const result = calcScore(v);
   const priorities = buildPriorities(result.items);
   lastResult = { client, hpUrl: document.getElementById('hpUrl').value.trim(), v, result };
@@ -1355,163 +1532,66 @@ async function saveToSheets() {
     btn.disabled = false; setTimeout(() => { btn.textContent = '📊 スプシに保存する'; }, 3000);
   }
 }
+
 function downloadPdf() {
   if (!lastResult) return;
   const { client, result } = lastResult;
   const score = result.total;
+  const sc = score >= 70 ? '#1a7a4a' : score >= 40 ? '#b07800' : '#c8281e';
+  const rows = result.items.map(item => {
+    const rc = item.rating === '◎' ? '#1e64dc' : item.rating === '○' ? '#0e8fa0' : item.rating === '△' ? '#1a7a4a' : '#c8281e';
+    const rb = item.rating === '◎' ? '#e8f0fe' : item.rating === '○' ? '#e0f7fa' : item.rating === '△' ? '#e8f5ee' : '#fdecea';
+    const sg = SUGGESTIONS[item.name];
+    const level = (item.rating === '◎' || item.rating === '○') ? 'good' : item.rating === '△' ? 'mid' : 'bad';
+    const sd = sg ? (sg[level] || sg.bad) : null;
+    const sgHtml = sd
+      ? '<tr><td colspan="5" style="padding:0 0 14px 0;border-bottom:2px solid #e0e0dc">'
+        + '<div style="background:#f7f7f5;border-radius:8px;padding:12px 14px;font-size:11px;line-height:1.8;margin-top:4px">'
+        + '<table style="width:100%;border-collapse:collapse;margin-bottom:8px"><tr valign="top">'
+        + '<td style="width:50%;padding-right:8px;border:none"><span style="color:#c8281e;font-weight:700">現状</span><br>' + sd.status + '</td>'
+        + '<td style="width:50%;border:none"><span style="color:#c8281e;font-weight:700">課題</span><br>' + sd.issue + '</td>'
+        + '</tr></table>'
+        + '<div style="margin-bottom:8px"><span style="color:#c8281e;font-weight:700">具体アクション</span><br>'
+        + sd.actions.map(a => '→ ' + a).join('<br>') + '</div>'
+        + '<div style="background:rgba(200,40,30,0.05);border-left:3px solid #c8281e;padding:8px 10px;border-radius:4px">'
+        + '<span style="color:#c8281e;font-weight:700">AIO観点</span><br>' + sd.aio + '</div>'
+        + '</div></td></tr>'
+      : '';
+    return '<tr style="border-bottom:1px solid #e8e8e4">'
+      + '<td style="padding:9px 8px"><span style="font-size:9px;color:#888;border:1px solid #ddd;padding:1px 5px;border-radius:3px;white-space:nowrap">' + item.category + '</span></td>'
+      + '<td style="padding:9px 8px;font-weight:600">' + item.name + '</td>'
+      + '<td style="padding:9px 8px"><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-weight:700;font-size:14px;background:' + rb + ';color:' + rc + '">' + item.rating + '</span></td>'
+      + '<td style="padding:9px 8px;font-family:monospace;text-align:center">' + item.score + '/' + item.max + '</td>'
+      + '<td style="padding:9px 8px;color:#555;font-size:11px">' + item.comment + '</td>'
+      + '</tr>' + sgHtml;
+  }).join('');
+  const priorities = Array.from(document.querySelectorAll('#priorityList .priority-item')).map((el,i) => (i+1)+'. '+el.querySelector('h4').textContent+'：'+el.querySelector('p').textContent).join('<br>');
   const today = new Date().toLocaleDateString('ja-JP');
   const year  = new Date().getFullYear();
-  const scoreLabel = score >= 70 ? '優良' : score >= 40 ? '改善余地あり' : '要対応';
-
-  const gradeColor = s => s==='◎'?'#991b1b':s==='○'?'#92400e':s==='△'?'#065f46':'#6b1a1a';
-  const gradeBg    = s => s==='◎'?'#fee2e2':s==='○'?'#fef3c7':s==='△'?'#d1fae5':'#fde8e8';
-  const gradeText  = s => s==='◎'?'優良':s==='○'?'良好':s==='△'?'改善余地':'要対応';
-
-  const itemCards = result.items.map(item => {
-    const sg = SUGGESTIONS[item.name];
-    const level = (item.rating==='◎'||item.rating==='○')?'good':item.rating==='△'?'mid':'bad';
-    const sd = sg ? (sg[level]||sg.bad) : null;
-    const pct = item.max > 0 ? Math.round((item.score/item.max)*100) : 0;
-    const barColor = item.rating==='◎'?'#991b1b':item.rating==='○'?'#92400e':item.rating==='△'?'#065f46':'#cbd5e1';
-
-    const suggestionHtml = sd ? `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;margin-bottom:10px">
-        <div style="background:#fff;border:1px solid #eee;border-radius:8px;padding:12px 14px">
-          <div style="font-size:9px;font-weight:700;color:#c8281e;letter-spacing:1px;margin-bottom:6px">// 現状</div>
-          <div style="font-size:11px;color:#333;line-height:1.7">${sd.status}</div>
-        </div>
-        <div style="background:#fff;border:1px solid #eee;border-radius:8px;padding:12px 14px">
-          <div style="font-size:9px;font-weight:700;color:#c8281e;letter-spacing:1px;margin-bottom:6px">// 課題</div>
-          <div style="font-size:11px;color:#333;line-height:1.7">${sd.issue}</div>
-        </div>
-      </div>
-      <div style="margin-bottom:10px">
-        <div style="font-size:9px;font-weight:700;color:#c8281e;letter-spacing:1px;margin-bottom:6px">// 具体アクション</div>
-        ${sd.actions.map(a=>`
-          <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;padding:8px 10px;background:#f5f5f5;border-left:3px solid #c8281e;border-radius:0 6px 6px 0">
-            <span style="color:#c8281e;font-weight:700;font-size:11px;flex-shrink:0">→</span>
-            <span style="font-size:11px;color:#333;line-height:1.6">${a}</span>
-          </div>`).join('')}
-      </div>
-      <div style="background:#fff0f0;border:1px solid #fdd;border-radius:8px;padding:12px 14px">
-        <div style="font-size:9px;font-weight:700;color:#c8281e;letter-spacing:1px;margin-bottom:4px">// AIO観点</div>
-        <div style="font-size:11px;color:#444;line-height:1.7">${sd.aio}</div>
-      </div>` : '';
-
-    return `
-      <div style="border:1px solid #e5e7eb;border-radius:12px;padding:20px 22px;margin-bottom:16px;page-break-inside:avoid;background:#fff">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div style="display:flex;align-items:center;gap:12px">
-            <span style="font-size:9px;color:#888;background:#f3f4f6;padding:3px 8px;border-radius:4px">${item.category}</span>
-            <span style="font-size:15px;font-weight:700;color:#111">${item.name}</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <span style="font-size:11px;color:#888">${item.score}/${item.max}点</span>
-            <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-weight:700;font-size:13px;background:${gradeBg(item.rating)};color:${gradeColor(item.rating)}">${item.rating}　${gradeText(item.rating)}</span>
-          </div>
-        </div>
-        <div style="background:#f3f4f6;border-radius:99px;height:6px;margin-bottom:10px">
-          <div style="background:${barColor};height:6px;border-radius:99px;width:${pct}%"></div>
-        </div>
-        <div style="font-size:11px;color:#666;line-height:1.7;margin-bottom:${sd?'4px':'0'}">${item.comment}</div>
-        ${suggestionHtml}
-      </div>`;
-  }).join('');
-
-  const priorities = Array.from(document.querySelectorAll('#priorityList .priority-item')).map((el,i) =>
-    `<div style="display:flex;align-items:flex-start;gap:14px;padding:14px 16px;background:#fff;border:1px solid #e5e7eb;border-left:4px solid #c8281e;border-radius:0 10px 10px 0;margin-bottom:10px;page-break-inside:avoid">
-      <div style="min-width:28px;height:28px;background:#c8281e;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${i+1}</div>
-      <div>
-        <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:4px">${el.querySelector('h4').textContent}</div>
-        <div style="font-size:11px;color:#666;line-height:1.7">${el.querySelector('p').textContent}</div>
-      </div>
-    </div>`
-  ).join('');
-
-  const summaryCards = ['◎','○','△','×'].map(r => {
-    const count = result.items.filter(i=>i.rating===r).length;
-    const labels = {'◎':'優良','○':'良好','△':'改善余地','×':'要対応'};
-    return `<div style="text-align:center;padding:18px 10px;background:${gradeBg(r)};border-radius:10px">
-      <div style="font-size:26px;font-weight:700;color:${gradeColor(r)}">${r}</div>
-      <div style="font-size:28px;font-weight:900;color:${gradeColor(r)};margin:6px 0">${count}</div>
-      <div style="font-size:10px;color:${gradeColor(r)}">${labels[r]}項目</div>
-    </div>`;
-  }).join('');
-
-  const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
-<title>AIO診断レポート_${client}</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-<style>
-@page { margin: 12mm 10mm; }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-body { font-family: 'Noto Sans JP', 'Hiragino Sans', sans-serif; color: #111; background: #fff; }
-.cover { width: 100%; height: 257mm; page-break-after: always; page-break-inside: avoid; background: #fafafa; display: flex; flex-direction: column; justify-content: space-between; padding: 56px 52px; }
-.section-title { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: #c8281e; border-bottom: 2px solid #c8281e; padding-bottom: 10px; margin-bottom: 20px; }
-tr { page-break-inside: avoid; }
-.detail-section { page-break-before: always; }
-.section-title { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: #c8281e; border-bottom: 2px solid #c8281e; padding-bottom: 10px; margin-bottom: 20px; }
-tr { page-break-inside: avoid; }
-</style>
-</head><body>
-
-<!-- 表紙 -->
-<div class="cover">
-  <div style="font-size:9px;letter-spacing:3px;color:#bbb">AIO DIAGNOSTIC REPORT</div>
-  <div>
-    <div style="border-left:3px solid #c8281e;padding-left:18px;margin-bottom:40px">
-      <div style="font-size:10px;color:#bbb;margin-bottom:6px">診断対象</div>
-      <div style="font-size:26px;font-weight:700;color:#111;line-height:1.4">${client}<br>御中</div>
-    </div>
-    <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">
-      <span style="font-size:96px;font-weight:700;color:#111;line-height:1">${score}</span>
-      <span style="font-size:20px;color:#bbb">/100</span>
-    </div>
-    <div style="display:inline-block;font-size:10px;font-weight:700;color:#c8281e;border:1.5px solid #c8281e;padding:4px 14px;border-radius:3px;letter-spacing:1px">${scoreLabel}</div>
-  </div>
-  <div style="border-top:0.5px solid #e5e5e5;padding-top:20px;display:flex;justify-content:space-between;align-items:center">
-    <div style="font-size:10px;color:#bbb">診断日　${today}</div>
-    <div style="font-size:14px;font-weight:700;color:#111;letter-spacing:-0.5px">SHO-SAN</div>
-  </div>
-</div>
-
-<!-- 本文 -->
-<div style="padding:0">
-  <div style="padding:32px 36px 0">
-    <div style="padding:18px 22px;background:#fff0f0;border-left:4px solid #c8281e;border-radius:0 10px 10px 0;margin-bottom:32px">
-      <div style="font-size:12px;line-height:2;color:#333">
-        平素より大変お世話になっております。このたびはAIO診断をご依頼いただき、誠にありがとうございます。<br>
-        AI検索時代における貴社のデジタルマーケティング施策について、診断結果をご報告申し上げます。
-      </div>
-    </div>
-    <div class="section-title">// 診断結果サマリー</div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px">
-      ${summaryCards}
-    </div>
-    <div class="section-title">// 優先対策トップ5</div>
-    <div style="margin-bottom:32px">${priorities}</div>
-  </div>
-  <div style="padding:0 36px" class="detail-section">
-    <div class="section-title">// 項目別診断結果</div>
-    ${itemCards}
-  </div>
-  <div style="margin:24px 36px 32px;padding-top:16px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between">
-    <div style="font-size:9px;color:#aaa">本資料はSHO-SAN AIO診断ツールによって自動生成されました</div>
-    <div style="font-size:9px;color:#aaa">© ${year} SHO-SAN</div>
-  </div>
-</div>
-
-</body></html>`;
-
+  const html = '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>AIO診断_' + client + '</title>'
+    + '<style>@page{margin:12mm 10mm}*{box-sizing:border-box;margin:0;padding:0}body{font-family:Hiragino Sans,sans-serif;font-size:12px;color:#1a1a1a;background:#fff}'
+    + '.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #c8281e}'
+    + 'h1{font-size:20px;font-weight:900;margin-bottom:4px}.score-box{text-align:center;background:#f7f7f5;border:1px solid #e0e0dc;border-radius:8px;padding:10px 18px}'
+    + '.num{font-size:34px;font-weight:900;color:' + sc + ';line-height:1}.lbl{font-size:10px;color:#888;margin-top:2px}'
+    + 'table{width:100%;border-collapse:collapse;margin-bottom:14px}th{background:#f0f0ee;padding:8px;font-size:10px;color:#666;text-align:left;border-bottom:2px solid #e0e0dc}'
+    + '.summary{background:#f7f7f5;border-left:3px solid #c8281e;padding:12px 14px;border-radius:4px;margin-bottom:14px}'
+    + '.summary h3{font-size:11px;color:#c8281e;margin-bottom:6px}.summary p{font-size:12px;line-height:1.8}'
+    + '.footer{text-align:center;font-size:10px;color:#aaa;margin-top:12px;padding-top:10px;border-top:1px solid #e0e0dc}</style></head><body>'
+    + '<div class="header"><div>'
+    + '<p style="font-size:10px;color:#888;margin-bottom:4px">SHO-SAN　AIO診断レポート</p>'
+    + '<p style="font-size:11px;color:#888;margin-bottom:4px">平素より大変お世話になっております。<br>このたびはAIO診断をご依頼いただき、誠にありがとうございます。<br>診断結果をご報告申し上げます。</p>'
+    + '<h1>' + client + ' 御中</h1><p style="font-size:11px;color:#888">診断日：' + today + '</p>'
+    + '</div><div class="score-box"><div class="num">' + score + '<span style="font-size:14px;color:#aaa">/100</span></div><div class="lbl">TOTAL SCORE</div></div></div>'
+    + '<table><thead><tr><th>大分類</th><th>項目</th><th>評価</th><th style="text-align:center">点数</th><th>所見</th></tr></thead><tbody>' + rows + '</tbody></table>'
+    + '<div class="summary"><h3>// 優先対策</h3><p>' + priorities + '</p></div>'
+    + '<div class="footer">SHO-SAN　AIO診断ツール　©' + year + '</div></body></html>';
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href = url;
-  a.download = 'AIO診断レポート_' + client + '_' + new Date().toISOString().slice(0,10) + '.html';
-  a.click();
+  a.href = url; a.download = 'AIO診断_' + client + '_' + new Date().toISOString().slice(0,10) + '.html'; a.click();
   URL.revokeObjectURL(url);
   alert('ダウンロードしたHTMLファイルをChromeで開いて\nCmd+P → PDFとして保存 でPDFになります！');
 }
-
 </script>
 </body>
 </html>
