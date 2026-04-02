@@ -1359,9 +1359,9 @@ function downloadPdf() {
   if (!lastResult) return;
   const { client, result } = lastResult;
   const score = result.total;
-  const target = 63;
   const today = new Date().toLocaleDateString('ja-JP');
   const year  = new Date().getFullYear();
+  const scoreLabel = score >= 70 ? '優良' : score >= 40 ? '改善余地あり' : '要対応';
 
   const gradeColor = s => s==='◎'?'#991b1b':s==='○'?'#92400e':s==='△'?'#065f46':'#6b1a1a';
   const gradeBg    = s => s==='◎'?'#fee2e2':s==='○'?'#fef3c7':s==='△'?'#d1fae5':'#fde8e8';
@@ -1445,7 +1445,7 @@ function downloadPdf() {
 @page { margin: 12mm 10mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 body { font-family: 'Noto Sans JP', 'Hiragino Sans', sans-serif; color: #111; background: #fff; }
-.cover { width: 100%; min-height: 100vh; page-break-after: always; background: #fff; display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+.cover { width: 100%; min-height: 100vh; page-break-after: always; background: #fafafa; display: flex; flex-direction: column; justify-content: space-between; padding: 56px 52px; }
 .section-title { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: #c8281e; border-bottom: 2px solid #c8281e; padding-bottom: 10px; margin-bottom: 20px; }
 tr { page-break-inside: avoid; }
 </style>
@@ -1453,29 +1453,24 @@ tr { page-break-inside: avoid; }
 
 <!-- 表紙 -->
 <div class="cover">
-  <div style="flex:1;padding:44px 44px 32px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:48px">
-      <div style="font-size:9px;letter-spacing:3px;color:#bbb">AIO DIAGNOSTIC REPORT</div>
-      <div style="font-size:14px;font-weight:700;color:#111;letter-spacing:-0.5px">SHO-SAN</div>
+  <div>
+    <div style="font-size:9px;letter-spacing:3px;color:#bbb;margin-bottom:52px">AIO DIAGNOSTIC REPORT</div>
+    <div style="border-left:3px solid #c8281e;padding-left:18px;margin-bottom:36px">
+      <div style="font-size:10px;color:#bbb;margin-bottom:6px">診断対象</div>
+      <div style="font-size:26px;font-weight:700;color:#111;line-height:1.4">${client}<br>御中</div>
     </div>
-    <div style="font-size:10px;color:#bbb;margin-bottom:6px">診断対象</div>
-    <div style="font-size:28px;font-weight:700;color:#111;line-height:1.3;margin-bottom:32px">${client} 御中</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;border:0.5px solid #e5e5e5;border-radius:10px;overflow:hidden;max-width:320px">
-      <div style="padding:18px 20px;border-right:0.5px solid #e5e5e5">
-        <div style="font-size:8px;letter-spacing:2px;color:#bbb;margin-bottom:6px">CURRENT</div>
-        <div style="font-size:40px;font-weight:700;color:#111;line-height:1">${score}</div>
-        <div style="font-size:10px;color:#bbb;margin-top:2px">/100 pt</div>
+    <div style="border-left:3px solid #eee;padding-left:18px">
+      <div style="font-size:10px;color:#bbb;margin-bottom:8px">総合スコア</div>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">
+        <span style="font-size:64px;font-weight:700;color:#111;line-height:1">${score}</span>
+        <span style="font-size:16px;color:#bbb">/100</span>
       </div>
-      <div style="padding:18px 20px;background:#fff5f5">
-        <div style="font-size:8px;letter-spacing:2px;color:#c8281e;margin-bottom:6px">TARGET</div>
-        <div style="font-size:40px;font-weight:700;color:#c8281e;line-height:1">${target}</div>
-        <div style="font-size:10px;color:#c8281e;margin-top:2px;opacity:0.6">/100 pt</div>
-      </div>
+      <div style="display:inline-block;font-size:10px;font-weight:700;color:#c8281e;border:1.5px solid #c8281e;padding:4px 14px;border-radius:3px;letter-spacing:1px">${scoreLabel}</div>
     </div>
   </div>
-  <div style="background:#c8281e;padding:20px 44px;display:flex;justify-content:space-between;align-items:center">
-    <div style="font-size:10px;color:rgba(255,255,255,0.6)">診断日　${today}</div>
-    <div style="font-size:10px;color:rgba(255,255,255,0.6)">SHO-SAN AIO診断ツール</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:0.5px solid #e5e5e5;padding-top:20px">
+    <div style="font-size:10px;color:#bbb">診断日　${today}</div>
+    <div style="font-size:14px;font-weight:700;color:#111;letter-spacing:-0.5px">SHO-SAN</div>
   </div>
 </div>
 
