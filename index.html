@@ -447,8 +447,10 @@ input[type="number"] { font-family:'Space Mono',monospace; }
       <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);margin-bottom:8px">お施主様インタビュー</div>
       <label class="ck"><input type="checkbox" id="int_vid_5" onchange="chkCont()"> 動画5本以上</label>
       <label class="ck"><input type="checkbox" id="int_vid_1" onchange="chkCont()"> 動画1〜4本</label>
+      <label class="ck"><input type="checkbox" id="int_vid_none" onchange="chkCont()"> 動画なし・テキストのみ</label>
       <label class="ck"><input type="checkbox" id="int_art_5" onchange="chkCont()"> 記事5件以上</label>
       <label class="ck"><input type="checkbox" id="int_art_1" onchange="chkCont()"> 記事1〜4件</label>
+      <label class="ck"><input type="checkbox" id="int_art_nokw" onchange="chkCont()"> 記事あり・KW対策/FAQ形式なし</label>
       <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);margin-top:12px;margin-bottom:8px">FAQページ</div>
       <label class="ck"><input type="checkbox" id="faq_100" onchange="chkCont()"> 100問以上・KW対応</label>
       <label class="ck"><input type="checkbox" id="faq_50" onchange="chkCont()"> 50問以上・KW対応</label>
@@ -776,24 +778,30 @@ function chkGbpMulti() {
 
 // ===== コンテンツ =====
 function chkCont() {
-  const vid5 = g('int_vid_5')?.checked;
-  const vid1 = g('int_vid_1')?.checked;
-  const art5 = g('int_art_5')?.checked;
-  const art1 = g('int_art_1')?.checked;
+  const vid5   = g('int_vid_5')?.checked;
+  const vid1   = g('int_vid_1')?.checked;
+  const vidNone= g('int_vid_none')?.checked;
+  const art5   = g('int_art_5')?.checked;
+  const art1   = g('int_art_1')?.checked;
+  const artNoKw= g('int_art_nokw')?.checked;
   const f100 = g('faq_100')?.checked;
   const f50  = g('faq_50')?.checked;
   const f20  = g('faq_20')?.checked;
   const fKwN = g('faq_kw_ng')?.checked;
 
-  sv('interviewVideo',   vid5?'2':vid1?'1':'0');
-  sv('interviewArticle', art5?'2':art1?'1':'0');
+  // 動画なし・テキストのみ → interviewVideo=-1 で×扱い
+  // 記事あり・KW対策なし → interviewArticle=-1 で×扱い
+  sv('interviewVideo',   vid5?'2':vid1?'1':vidNone?'-1':'0');
+  sv('interviewArticle', art5?'2':art1?'1':artNoKw?'-1':'0');
   sv('faq', f100?'3':f50?'2':f20?'1':fKwN?'-1':'0');
 
   const badge = document.getElementById('cont-badge');
   if (!badge) return;
+  const hasNg = vidNone || artNoKw;
   const hasInter = vid5||vid1||art5||art1;
   const hasFaq   = f100||f50||f20;
-  if (f100 && (vid5||art5)) { badge.textContent='◎ 充実'; badge.className='acc-badge good'; }
+  if (hasNg && !vid5 && !vid1) { badge.textContent='× 要改善'; badge.className='acc-badge bad'; }
+  else if (f100 && (vid5||art5)) { badge.textContent='◎ 充実'; badge.className='acc-badge good'; }
   else if (hasFaq || hasInter) { badge.textContent='△〜○'; badge.className='acc-badge mid'; }
   else { badge.textContent='未入力'; badge.className='acc-badge'; }
 }
@@ -1272,13 +1280,26 @@ function calcScore(v) {
 
   // インタビュー
   let intScore = 0, intRating = '×', intComment = '';
-  let pts = 0;
-  if (intVideo === 2) pts += 6; else if (intVideo === 1) pts += 3;
-  if (intArticle === 2) pts += 4; else if (intArticle === 1) pts += 2;
-  intScore = Math.min(pts, 10);
-  intRating = intScore >= 8 ? '◎' : intScore >= 6 ? '○' : intScore >= 4 ? '△' : '×';
-  intScore = intRating === '◎' ? 10 : intRating === '○' ? 7 : intRating === '△' ? 4 : 0;
-  intComment = `動画：${['なし','1〜4本','5本以上'][intVideo]}、記事：${['なし','1〜4件','5件以上'][intArticle]}。${intScore >= 7 ? 'E-E-A-T観点で良好。AIに引用されやすい一次情報。' : intScore >= 4 ? 'さらに件数増加でAI引用率が向上。' : 'お施主様の声はAIが最も引用しやすいコンテンツ。制作開始が必要。'}`;
+  // -1 = ×扱い（動画なし・テキストのみ or 記事KW対策なし）
+  const intVideoNg   = intVideo === -1;
+  const intArticleNg = intArticle === -1;
+  if (intVideoNg || intArticleNg) {
+    intScore = 0; intRating = '×';
+    const reasons = [];
+    if (intVideoNg)   reasons.push('動画なし・テキストのみ');
+    if (intArticleNg) reasons.push('記事あり・KW対策/FAQ形式なし');
+    intComment = reasons.join('・') + 'のため評価×。動画制作またはFAQ形式での記事化が必要。';
+  } else {
+    let pts = 0;
+    if (intVideo === 2) pts += 6; else if (intVideo === 1) pts += 3;
+    if (intArticle === 2) pts += 4; else if (intArticle === 1) pts += 2;
+    intScore = Math.min(pts, 10);
+    intRating = intScore >= 8 ? '◎' : intScore >= 6 ? '○' : intScore >= 4 ? '△' : '×';
+    intScore = intRating === '◎' ? 10 : intRating === '○' ? 7 : intRating === '△' ? 4 : 0;
+    const vidLabel = {0:'なし',1:'1〜4本',2:'5本以上'}[intVideo]||'なし';
+    const artLabel = {0:'なし',1:'1〜4件',2:'5件以上'}[intArticle]||'なし';
+    intComment = `動画：${vidLabel}、記事：${artLabel}。${intScore >= 7 ? 'E-E-A-T観点で良好。AIに引用されやすい一次情報。' : intScore >= 4 ? 'さらに件数増加でAI引用率が向上。' : 'お施主様の声はAIが最も引用しやすいコンテンツ。制作開始が必要。'}`;
+  }
   items.push({ category:'独自コンテンツ', name:'お施主様インタビュー', rating:intRating, score:intScore, max:10, comment:intComment });
 
   // FAQ
