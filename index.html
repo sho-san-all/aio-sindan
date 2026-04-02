@@ -143,6 +143,24 @@ input[type="number"] { font-family:'Space Mono',monospace; }
 
 .ck input[type="radio"] { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+async function captureModal() {
+  const modal = document.querySelector('.modal');
+  const canvas = await html2canvas(modal, { scale: 2, backgroundColor: '#ffffff' });
+  canvas.toBlob(async blob => {
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      alert('クリップボードにコピーしました！Cmd+Vで貼り付けできます。');
+    } catch(e) {
+      // クリップボードが失敗したらダウンロードにフォールバック
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '診断示唆_' + new Date().toISOString().slice(0,10) + '.png';
+      a.click();
+    }
+  });
+}
+</script>
 </head>
 <body>
 <div class="container">
@@ -562,6 +580,7 @@ input[type="number"] { font-family:'Space Mono',monospace; }
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
   <div class="modal">
     <button class="modal-close" onclick="document.getElementById('modalOverlay').className='modal-overlay'">✕</button>
+    <button onclick="captureModal()" style="position:absolute;top:16px;right:56px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;color:var(--muted)">📋 画像コピー</button>
     <div class="modal-title" id="modalTitle"></div>
     <div class="modal-rating" id="modalRating"></div>
     <div class="modal-section"><h4>// 現状</h4><p id="modalStatus"></p></div>
