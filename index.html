@@ -520,7 +520,6 @@ async function captureModal() {
   <div style="display:flex;gap:10px;margin-top:20px">
     <button class="btn-run" onclick="runDiagnosis()" style="flex:1">▶ 診断を実行する</button>
     <button class="history-btn" onclick="toggleHistory()" style="white-space:nowrap">📂 履歴</button>
-    <button onclick="fillTestData()" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:17px 20px;font-family:'Space Mono',monospace;font-size:11px;cursor:pointer;white-space:nowrap;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">🧪 テストデータ</button>
   </div>
 </div>
 
@@ -1066,11 +1065,40 @@ function loadHistory(id) {
         b.className = 'toggle-btn' + (b.getAttribute('data-val') === f.scale ? ' active' : '');
       });
     }
+    // 数値・hidden系を復元
     ['dr','siteRobots','siteSitemap','siteJsonld','siteOverall','siteScore',
-     'igFollowers','igFreq','igReel','ytSubs','ytFreq','ttFollowers','ttFreq',
+     'igFollowers','igFreq','igReel','igEngagement','igAvgLikes','igAvgSaves','igAvgComments',
+     'ytSubs','ytShorts','ytFreq','ttFollowers','ttFreq',
      'gbpReviews','gbpRating','gbpPhotos','gbpReply','gbpDesc','gbpPost',
+     'gbpMode','gbpTotalStores','gbpNgPost','gbpNgReply','gbpNgBuild',
      'interviewVideo','interviewArticle','faq','columnCount','columnFreq','pr'
-    ].forEach(id => { if (f[id] !== undefined) document.getElementById(id).value = f[id]; });
+    ].forEach(id => { const el = document.getElementById(id); if (el && f[id] !== undefined) el.value = f[id]; });
+
+    // チェックボックス復元
+    ['ig_none','ig_stop','ig_reel','ig_reel_stop','ig_reel_reg','ig_reel_hi','ig_hl',
+     'yt_none','yt_stop','yt_shorts','yt_shorts_stop','yt_shorts_w1','yt_shorts_w2',
+     'yt_long','yt_long_stop','yt_long_room','yt_long_inter','yt_long_w1',
+     'tt_none','tt_stop','tt_irr','tt_daily','tt_m4',
+     'gbp_has_desc','gbp_has_service','gbp_has_product','gbp_m_reply_ok','gbp_m_desc_kw',
+     'int_vid_5','int_vid_1','int_vid_none','int_art_5','int_art_1','int_art_nokw',
+     'faq_100','faq_50','faq_20','faq_kw_ng',
+     'col_none','col_staff','col_irr','col_w1','col_w2',
+     'pr_none','pr_old','pr_1','pr_3'
+    ].forEach(id => { const el = document.getElementById(id); if (el && f[id] !== undefined) el.checked = f[id]; });
+
+    // ラジオボタン復元（GBP）
+    if (f.gbp_post_r)  { const r = document.querySelector(`input[name="gbp_post_r"][value="${f.gbp_post_r}"]`);  if(r) r.checked=true; }
+    if (f.gbp_reply_r) { const r = document.querySelector(`input[name="gbp_reply_r"][value="${f.gbp_reply_r}"]`); if(r) r.checked=true; }
+    if (f.gbp_build_r) { const r = document.querySelector(`input[name="gbp_build_r"][value="${f.gbp_build_r}"]`); if(r) r.checked=true; }
+
+    // GBPモード・サブ表示復元
+    if (f.gbpMode) setGbpMode(f.gbpMode);
+    const buildSub = document.getElementById('gbp_build_sub');
+    if (buildSub && f.gbp_build_r) buildSub.style.display = f.gbp_build_r==='some'?'block':'none';
+
+    // バッジ・サブ項目を同期
+    chkIg(); chkYt(); chkTt(); chkGbp(); chkCont(); chkCol(); chkPr();
+    calcIgEng();
   }
   renderResults(entry.client, { items: entry.items, total: entry.total }, buildPriorities(entry.items), { dr: entry.formData?.dr || '' });
   document.getElementById('historyPanel').className = 'history-panel';
@@ -1098,38 +1126,6 @@ function saveGasUrl() {
   if (!url.startsWith('https://script.google.com')) { s.className='status-msg status-err'; s.textContent='⚠ GAS URLの形式が正しくありません'; return; }
   localStorage.setItem('aio_gas_url', url);
   s.className = 'status-msg status-ok'; s.textContent = '✓ GAS URLを保存しました';
-}
-
-function fillTestData() {
-  document.getElementById('clientName').value = 'サンプル工務店';
-  document.getElementById('hpUrl').value = 'https://example.com';
-  document.querySelectorAll('#scaleGroup .toggle-btn').forEach(b => { b.className = 'toggle-btn' + (b.getAttribute('data-val') === 'small' ? ' active' : ''); });
-  document.getElementById('scale').value = 'small';
-  document.getElementById('dr').value = 25;
-  document.getElementById('siteRobots').value = '×';
-  document.getElementById('siteSitemap').value = '△';
-  document.getElementById('siteJsonld').value = '×';
-  document.getElementById('siteOverall').value = 'D';
-  document.getElementById('siteScore').value = '';
-  document.getElementById('igFollowers').value = 3500;
-  document.getElementById('igFreq').value = '2';
-  document.getElementById('igReel').value = '2';
-  document.getElementById('ytSubs').value = 500;
-  document.getElementById('ytFreq').value = '2';
-  document.getElementById('ttFollowers').value = 0;
-  document.getElementById('ttFreq').value = '0';
-  document.getElementById('gbpReviews').value = 18;
-  document.getElementById('gbpRating').value = 4.1;
-  document.getElementById('gbpPhotos').value = 25;
-  document.getElementById('gbpReply').value = '1';
-  document.getElementById('gbpDesc').value = '1';
-  document.getElementById('gbpPost').value = '1';
-  document.getElementById('interviewVideo').value = '1';
-  document.getElementById('interviewArticle').value = '1';
-  document.getElementById('faq').value = '1';
-  document.getElementById('columnCount').value = 8;
-  document.getElementById('columnFreq').value = '1';
-  document.getElementById('pr').value = '1';
 }
 
 function calcScore(v) {
