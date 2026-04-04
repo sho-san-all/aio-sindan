@@ -1165,8 +1165,13 @@ function calcScore(v) {
   const gradeToScore  = g => ({'◎':10,'○':7,'△':4,'×':0,'A':10,'B':7,'C':4,'D':3,'E':0}[g] || 0);
   const overallToRating = g => (['A','B'].includes(g) ? '◎' : g === 'C' ? '△' : g ? '×' : '×');
   let siteScore = 0, siteRating = '×', siteComment = '';
-  if (siteOverall) {
-    siteScore = siteScoreInput > 0 ? Math.min(siteScoreInput, 20) : Math.min(gradeToScore(siteOverall), 20);
+  if (siteScoreInput > 0) {
+    siteScore = Math.min(siteScoreInput, 20);
+    siteRating = siteScore >= 14 ? '◎' : siteScore >= 8 ? '○' : siteScore >= 4 ? '△' : '×';
+    const details = [siteRobots ? 'robots.txt:'+siteRobots : null, siteSitemap ? 'sitemap:'+siteSitemap : null, siteJsonld ? 'JSON-LD:'+siteJsonld : null].filter(Boolean).join(' / ');
+    siteComment = (siteOverall ? '全体評価'+siteOverall+'。' : '') + (details ? '（'+details+'）' : '') + (siteScore >= 8 ? 'AIクローラー対応・構造化データともに良好。' : siteScore >= 4 ? '一部対応済みだが改善余地あり。' : 'サイト基盤の整備が急務。');
+  } else if (siteOverall) {
+    siteScore = Math.min(gradeToScore(siteOverall), 20);
     siteRating = overallToRating(siteOverall);
     const details = [siteRobots ? 'robots.txt:'+siteRobots : null, siteSitemap ? 'sitemap:'+siteSitemap : null, siteJsonld ? 'JSON-LD:'+siteJsonld : null].filter(Boolean).join(' / ');
     siteComment = '全体評価'+siteOverall+'。'+(details ? '（'+details+'）' : '')+(siteScore >= 8 ? 'AIクローラー対応・構造化データともに良好。' : siteScore >= 4 ? '一部対応済みだが改善余地あり。' : 'サイト基盤の整備が急務。');
@@ -1175,7 +1180,6 @@ function calcScore(v) {
     const details = [siteRobots ? 'robots.txt:'+siteRobots : null, siteSitemap ? 'sitemap:'+siteSitemap : null, siteJsonld ? 'JSON-LD:'+siteJsonld : null].filter(Boolean).join(' / ');
     siteComment = details ? details+'。全体評価を入力するとスコアに反映されます。' : '未評価。他ツールで診断後に入力してください。';
   }
-  items.push({ category:'サイト土台', name:'サイト基盤', rating:siteRating, score:siteScore, max:20, comment:siteComment });
 
   // DR
   let drScore = 0, drRating = '×', drComment = '';
