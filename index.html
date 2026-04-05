@@ -1167,9 +1167,9 @@ function calcScore(v) {
   let siteScore = 0, siteRating = '×', siteComment = '';
   if (siteScoreInput > 0) {
     siteScore = Math.min(siteScoreInput, 20);
-    siteRating = siteScore >= 14 ? '◎' : siteScore >= 8 ? '○' : siteScore >= 4 ? '△' : '×';
+    siteRating = siteOverall ? overallToRating(siteOverall) : (siteScore >= 14 ? '◎' : siteScore >= 8 ? '○' : siteScore >= 4 ? '△' : '×');
     const details = [siteRobots ? 'robots.txt:'+siteRobots : null, siteSitemap ? 'sitemap:'+siteSitemap : null, siteJsonld ? 'JSON-LD:'+siteJsonld : null].filter(Boolean).join(' / ');
-    siteComment = (siteOverall ? '全体評価'+siteOverall+'。' : '') + (details ? '（'+details+'）' : '') + (siteScore >= 8 ? 'AIクローラー対応・構造化データともに良好。' : siteScore >= 4 ? '一部対応済みだが改善余地あり。' : 'サイト基盤の整備が急務。');
+    siteComment = (siteOverall ? '全体評価'+siteOverall+'。' : '')+(details ? '（'+details+'）' : '')+(siteScore >= 8 ? 'AIクローラー対応・構造化データともに良好。' : siteScore >= 4 ? '一部対応済みだが改善余地あり。' : 'サイト基盤の整備が急務。');
   } else if (siteOverall) {
     siteScore = Math.min(gradeToScore(siteOverall), 20);
     siteRating = overallToRating(siteOverall);
