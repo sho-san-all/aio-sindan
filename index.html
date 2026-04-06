@@ -1113,7 +1113,7 @@ function loadHistory(id) {
     chkIg(); chkYt(); chkTt(); chkGbp(); chkCont(); chkCol(); chkPr();
     calcIgEng();
   }
-  renderResults(entry.client, { items: entry.items, total: entry.total }, buildPriorities(entry.items), { dr: entry.formData?.dr || '' });
+ renderResults(entry.client, { items: entry.items, total: entry.total }, buildPriorities(entry.items), entry.formData || { dr: '' });
   document.getElementById('historyPanel').className = 'history-panel';
   document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
   document.getElementById('gasSection').style.display = 'block';
