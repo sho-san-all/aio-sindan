@@ -1757,7 +1757,9 @@ function calcScore(v) {
   else if (columnFreq === 0) { colRating = '×'; colScore = 0; colComment = 'コラムなし・停止。定期更新開始が必要。'; }
   else {
     colScore = Math.min(pts, 5);
-    colRating = colScore >= 5 ? '◎' : colScore >= 4 ? '○' : colScore >= 2 ? '△' : '×';
+    colRating = columnFreq === 1
+      ? '△'  // 不定期は△止まり
+      : colScore >= 5 ? '◎' : colScore >= 4 ? '○' : colScore >= 2 ? '△' : '×';
     colScore = colRating === '◎' ? 5 : colRating === '○' ? 3.5 : colRating === '△' ? 2 : 0;
     const freqLabel = {1:'不定期',3:'月4回（週1）',4:'月8回（週2）'}[columnFreq] || '';
     colComment = `記事数${columnCount}件、更新頻度：${freqLabel}。${colScore >= 4 ? '継続的な情報発信でAI引用の土台ができている。' : colScore >= 2 ? '記事数・更新頻度を増やしてAI認知を向上。' : 'コラムはAIが情報収集する主要ソース。定期更新開始が必要。'}`;
