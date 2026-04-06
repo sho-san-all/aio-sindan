@@ -939,6 +939,7 @@ function chkYt() {
   if (!badge) return;
   if (none) { badge.textContent='未運用'; badge.className='acc-badge bad'; }
   else if (stop) { badge.textContent='更新停止'; badge.className='acc-badge bad'; }
+  else if (!shorts && longV && lSt) { badge.textContent='× 長尺停止・ショーツなし'; badge.className='acc-badge bad'; }
   else if (!shorts) { badge.textContent='× ショーツなし'; badge.className='acc-badge bad'; }
   else if (sSt) { badge.textContent='× ショーツ停止'; badge.className='acc-badge bad'; }
   else if (sW1 || sW2) { badge.textContent='○ ショーツ定期'; badge.className='acc-badge good'; }
@@ -1697,7 +1698,7 @@ function calcScore(v) {
   if (ytShorts2 === 0) {
     ytScore = 0; ytRating = '×';
     if (ytSubs === 0 && ytFreq === 0) ytComment = '未運用。ショーツがないためスコアなし。';
-    else if (ytFreq === -1) ytComment = `登録者${ytSubs.toLocaleString()}人だが更新停止中。ショーツなしのためスコアなし。`;
+    else if (ytFreq === -1) ytComment = `登録者${ytSubs.toLocaleString()}人だが長尺の最新投稿なし・ショーツなし。ショーツ定期投稿を開始するとスコアアップ可能。`;
     else ytComment = `登録者${ytSubs.toLocaleString()}人。ショーツ投稿がないためスコアは×。ショーツを定期投稿するとスコアアップ可能。`;
   } else {
     if (ytFreq === -1) {
