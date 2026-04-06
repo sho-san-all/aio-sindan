@@ -1109,11 +1109,27 @@ function loadHistory(id) {
     const buildSub = document.getElementById('gbp_build_sub');
     if (buildSub && f.gbp_build_r) buildSub.style.display = f.gbp_build_r==='some'?'block':'none';
 
+    // チェックボックスからhidden値を再計算して同期
+    // （古い履歴データにhidden値が保存されていない場合の対策）
+    const _reel    = document.getElementById('ig_reel')?.checked;
+    const _reelSt  = document.getElementById('ig_reel_stop')?.checked;
+    const _reelImg = document.getElementById('ig_reel_img')?.checked;
+    const _reelIrr = document.getElementById('ig_reel_irr')?.checked;
+    const _reelM1  = document.getElementById('ig_reel_m1')?.checked;
+    const _reelReg = document.getElementById('ig_reel_reg')?.checked;
+    const _reelHi  = document.getElementById('ig_reel_hi')?.checked;
+    if (_reel) {
+      const _reelVal = _reelReg ? '2' : '1';
+      document.getElementById('igReel').value = _reelVal;
+      const _freq = _reelHi ? '3' : _reelReg ? '2' : '1';
+      document.getElementById('igFreq').value = _reelSt ? '-1' : _freq;
+    }
+
     // バッジ・サブ項目を同期
     chkIg(); chkYt(); chkTt(); chkGbp(); chkCont(); chkCol(); chkPr();
     calcIgEng();
   }
- renderResults(entry.client, { items: entry.items, total: entry.total }, buildPriorities(entry.items), entry.formData || { dr: '' });
+  renderResults(entry.client, { items: entry.items, total: entry.total }, buildPriorities(entry.items), entry.formData || { dr: '' });
   document.getElementById('historyPanel').className = 'history-panel';
   document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
   document.getElementById('gasSection').style.display = 'block';
