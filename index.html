@@ -927,9 +927,9 @@ function chkYt() {
 
   let ytS = '0', ytF = '0';
   if (none) { ytS = '0'; ytF = '0'; }
-  else if (stop) { ytF = '-1'; ytS = shorts ? (sSt ? '0' : sW2?'3':sW1?'2':'1') : '0'; }
+  else if (stop) { ytF = '-1'; ytS = shorts ? (sSt ? '-1' : sW2?'3':sW1?'2':'1') : '0'; }
   else {
-    ytS = shorts ? (sSt ? '0' : sW2?'3':sW1?'2':'1') : '0';
+    ytS = shorts ? (sSt ? '-1' : sW2?'3':sW1?'2':'1') : '0';
     ytF = !longV ? '0' : lSt ? '-1' : lW1 ? '3' : lInter ? '2' : lRoom ? '1' : '1';
   }
 
@@ -939,9 +939,9 @@ function chkYt() {
   if (!badge) return;
   if (none) { badge.textContent='未運用'; badge.className='acc-badge bad'; }
   else if (stop) { badge.textContent='更新停止'; badge.className='acc-badge bad'; }
+  else if (shorts && sSt) { badge.textContent='× ショーツ停止'; badge.className='acc-badge bad'; }
   else if (!shorts && longV && lSt) { badge.textContent='× 長尺停止・ショーツなし'; badge.className='acc-badge bad'; }
   else if (!shorts) { badge.textContent='× ショーツなし'; badge.className='acc-badge bad'; }
-  else if (sSt) { badge.textContent='× ショーツ停止'; badge.className='acc-badge bad'; }
   else if (sW1 || sW2) { badge.textContent='○ ショーツ定期'; badge.className='acc-badge good'; }
   else { badge.textContent='△ ショーツあり'; badge.className='acc-badge mid'; }
 }
@@ -1695,7 +1695,11 @@ function calcScore(v) {
   // YouTube（ショーツ対応）
   const ytShorts2 = parseInt(v.ytShorts) || 0;
   let ytScore = 0, ytRating = '×', ytComment = '';
-  if (ytShorts2 === 0) {
+  if (ytShorts2 === -1) {
+    // ショーツあり・最新投稿なし（停止）
+    ytScore = 0; ytRating = '×';
+    ytComment = `登録者${ytSubs.toLocaleString()}人。ショーツの最新投稿なし（更新停止）。投稿を再開するとスコアアップ可能。`;
+  } else if (ytShorts2 === 0) {
     ytScore = 0; ytRating = '×';
     if (ytSubs === 0 && ytFreq === 0) ytComment = '未運用。ショーツがないためスコアなし。';
     else if (ytFreq === -1) ytComment = `登録者${ytSubs.toLocaleString()}人だが長尺の最新投稿なし・ショーツなし。ショーツ定期投稿を開始するとスコアアップ可能。`;
