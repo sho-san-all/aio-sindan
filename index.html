@@ -1291,6 +1291,10 @@ function saveToHistory() {
       siteOverall: document.getElementById('siteOverall').value,
       siteScore: document.getElementById('siteScore').value,
       igFollowers: document.getElementById('igFollowers').value,
+      igAvgLikes: document.getElementById('igAvgLikes').value,
+      igAvgSaves: document.getElementById('igAvgSaves').value,
+      igAvgComments: document.getElementById('igAvgComments').value,
+      igEngagement: document.getElementById('igEngagement').value,
       igFreq: document.getElementById('igFreq').value,
       igReel: document.getElementById('igReel').value,
       ytSubs: document.getElementById('ytSubs').value,
@@ -1303,6 +1307,26 @@ function saveToHistory() {
       gbpReply: document.getElementById('gbpReply').value,
       gbpDesc: document.getElementById('gbpDesc').value,
       gbpPost: document.getElementById('gbpPost').value,
+      gbpReviews2: document.getElementById('gbpReviews2')?.value||'',
+      gbpRating2: document.getElementById('gbpRating2')?.value||'',
+      gbpPhotos2: document.getElementById('gbpPhotos2')?.value||'',
+      gbpReviews3: document.getElementById('gbpReviews3')?.value||'',
+      gbpRating3: document.getElementById('gbpRating3')?.value||'',
+      gbpPhotos3: document.getElementById('gbpPhotos3')?.value||'',
+      gbpReviews4: document.getElementById('gbpReviews4')?.value||'',
+      gbpRating4: document.getElementById('gbpRating4')?.value||'',
+      gbpPhotos4: document.getElementById('gbpPhotos4')?.value||'',
+      gbpReviews5: document.getElementById('gbpReviews5')?.value||'',
+      gbpRating5: document.getElementById('gbpRating5')?.value||'',
+      gbpPhotos5: document.getElementById('gbpPhotos5')?.value||'',
+      gbpReviewsM: document.getElementById('gbpReviewsM')?.value||'',
+      gbpRatingM: document.getElementById('gbpRatingM')?.value||'',
+      gbpPhotosM: document.getElementById('gbpPhotosM')?.value||'',
+      gbpStoreCount: document.getElementById('gbpStoreCount')?.value||'1',
+      gbpTotalStores: document.getElementById('gbpTotalStores')?.value||'0',
+      gbpNgPost: document.getElementById('gbpNgPost')?.value||'0',
+      gbpNgReply: document.getElementById('gbpNgReply')?.value||'0',
+      gbpNgBuild: document.getElementById('gbpNgBuild')?.value||'0',
       interviewVideo: document.getElementById('interviewVideo').value,
       interviewArticle: document.getElementById('interviewArticle').value,
       faq: document.getElementById('faq').value,
@@ -1336,6 +1360,18 @@ function saveToHistory() {
       gbp_post_r: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_post_r"]')) if(r.checked) return r.value; return '0'; })(),
       gbp_reply_r: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_reply_r"]')) if(r.checked) return r.value; return '0'; })(),
       gbp_build_r: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_build_r"]')) if(r.checked) return r.value; return 'none'; })(),
+      gbp_post_r2: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_post_r2"]')) if(r.checked) return r.value; return '0'; })(),
+      gbp_reply_r2: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_reply_r2"]')) if(r.checked) return r.value; return '0'; })(),
+      gbp_build_r2: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_build_r2"]')) if(r.checked) return r.value; return 'none'; })(),
+      gbp_post_r3: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_post_r3"]')) if(r.checked) return r.value; return '0'; })(),
+      gbp_reply_r3: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_reply_r3"]')) if(r.checked) return r.value; return '0'; })(),
+      gbp_build_r3: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_build_r3"]')) if(r.checked) return r.value; return 'none'; })(),
+      gbp_post_r4: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_post_r4"]')) if(r.checked) return r.value; return '0'; })(),
+      gbp_reply_r4: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_reply_r4"]')) if(r.checked) return r.value; return '0'; })(),
+      gbp_build_r4: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_build_r4"]')) if(r.checked) return r.value; return 'none'; })(),
+      gbp_post_r5: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_post_r5"]')) if(r.checked) return r.value; return '0'; })(),
+      gbp_reply_r5: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_reply_r5"]')) if(r.checked) return r.value; return '0'; })(),
+      gbp_build_r5: (()=>{ for(const r of document.querySelectorAll('input[name="gbp_build_r5"]')) if(r.checked) return r.value; return 'none'; })(),
       gbp_has_desc: document.getElementById('gbp_has_desc')?.checked||false,
       gbp_has_service: document.getElementById('gbp_has_service')?.checked||false,
       gbp_has_product: document.getElementById('gbp_has_product')?.checked||false,
@@ -1415,7 +1451,12 @@ function loadHistory(id) {
      'igFollowers','igFreq','igReel','igEngagement','igAvgLikes','igAvgSaves','igAvgComments',
      'ytSubs','ytShorts','ytFreq','ttFollowers','ttFreq',
      'gbpReviews','gbpRating','gbpPhotos','gbpReply','gbpDesc','gbpPost',
-     'gbpMode','gbpTotalStores','gbpNgPost','gbpNgReply','gbpNgBuild',
+     'gbpReviews2','gbpRating2','gbpPhotos2',
+     'gbpReviews3','gbpRating3','gbpPhotos3',
+     'gbpReviews4','gbpRating4','gbpPhotos4',
+     'gbpReviews5','gbpRating5','gbpPhotos5',
+     'gbpReviewsM','gbpRatingM','gbpPhotosM',
+     'gbpMode','gbpStoreCount','gbpTotalStores','gbpNgPost','gbpNgReply','gbpNgBuild',
      'interviewVideo','interviewArticle','faq','columnCount','columnFreq','pr'
     ].forEach(id => { const el = document.getElementById(id); if (el && f[id] !== undefined) el.value = f[id]; });
 
@@ -1431,13 +1472,19 @@ function loadHistory(id) {
      'pr_none','pr_old','pr_1','pr_3'
     ].forEach(id => { const el = document.getElementById(id); if (el && f[id] !== undefined) el.checked = f[id]; });
 
-    // ラジオボタン復元（GBP）
-    if (f.gbp_post_r)  { const r = document.querySelector(`input[name="gbp_post_r"][value="${f.gbp_post_r}"]`);  if(r) r.checked=true; }
-    if (f.gbp_reply_r) { const r = document.querySelector(`input[name="gbp_reply_r"][value="${f.gbp_reply_r}"]`); if(r) r.checked=true; }
-    if (f.gbp_build_r) { const r = document.querySelector(`input[name="gbp_build_r"][value="${f.gbp_build_r}"]`); if(r) r.checked=true; }
+    // ラジオボタン復元（GBP 全店舗）
+    ['','2','3','4','5'].forEach(suffix => {
+      const pk = 'gbp_post_r'  + suffix;
+      const rk = 'gbp_reply_r' + suffix;
+      const bk = 'gbp_build_r' + suffix;
+      if (f[pk]) { const r = document.querySelector(`input[name="${pk}"][value="${f[pk]}"]`);  if(r) r.checked=true; }
+      if (f[rk]) { const r = document.querySelector(`input[name="${rk}"][value="${f[rk]}"]`); if(r) r.checked=true; }
+      if (f[bk]) { const r = document.querySelector(`input[name="${bk}"][value="${f[bk]}"]`); if(r) r.checked=true; }
+    });
 
-    // GBPモード・サブ表示復元
-    if (f.gbpMode) setGbpMode(f.gbpMode);
+    // GBPモード・店舗数復元
+    if (f.gbpStoreCount) setGbpStores(parseInt(f.gbpStoreCount));
+    else if (f.gbpMode) setGbpMode(f.gbpMode);
     const buildSub = document.getElementById('gbp_build_sub');
     if (buildSub && f.gbp_build_r) buildSub.style.display = f.gbp_build_r==='some'?'block':'none';
 
@@ -1946,7 +1993,6 @@ function runDiagnosis() {
     gbpDesc:  document.getElementById('gbpDesc').value,
     gbpPost:  document.getElementById('gbpPost').value,
     gbpMode:  document.getElementById('gbpMode').value,
-    gbpStoreCount: document.getElementById('gbpStoreCount')?.value||'1',
     gbpStoreCount: document.getElementById('gbpStoreCount')?.value||'1',
     gbpTotalStores: document.getElementById('gbpTotalStores')?.value||'0',
     gbpNgPost:  document.getElementById('gbpNgPost')?.value||'0',
