@@ -609,6 +609,9 @@ function chkIg() {
   const stop    = g('ig_stop')?.checked;
   const reel    = g('ig_reel')?.checked;
   const reelSt  = g('ig_reel_stop')?.checked;
+  const reelImg = g('ig_reel_img')?.checked;
+  const reelIrr = g('ig_reel_irr')?.checked;
+  const reelM1  = g('ig_reel_m1')?.checked;
   const reelReg = g('ig_reel_reg')?.checked;
   const reelHi  = g('ig_reel_hi')?.checked;
   show('ig_reel_sub', reel);
@@ -617,8 +620,8 @@ function chkIg() {
   if (none || !g('ig_none')) { freq = '0'; reelVal = '0'; }
   else if (stop) { freq = '-1'; reelVal = reel ? (reelReg ? '2' : '1') : '0'; }
   else {
-    freq = reelHi ? '3' : reelReg ? '2' : '1';
-    reelVal = reel ? (reelReg ? '2' : '1') : '0';
+    freq = reelHi ? '3' : reelReg ? '2' : reelM1 ? '1' : reelIrr ? '1' : '1';
+    reelVal = reel ? (reelReg ? '2' : reelM1 ? '1' : reelIrr ? '1' : reelImg ? '1' : '1') : '0';
   }
   if (reel && reelSt) { freq = '-1'; }
   if (reel && reelImg && reelVal === '2') { reelVal = '1'; } // 画像リールは定期でも△止まり
