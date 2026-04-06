@@ -1051,7 +1051,7 @@ function chkGbpAll() {
   const reply1 = parseInt((() => { for(const r of document.querySelectorAll('input[name="gbp_reply_r"]')) if(r.checked) return r.value; return '0'; })());
   const build1 = (() => { for(const r of document.querySelectorAll('input[name="gbp_build_r"]')) if(r.checked) return r.value; return 'none'; })();
   const hasProduct1 = document.getElementById('gbp_has_product')?.checked;
-  const desc1 = build1 === 'none' ? 0 : hasProduct1 ? 2 : 1;
+  const desc1 = build1 === 'none' ? 0 : (hasProduct1 || build1 === 'some') ? 2 : 1;
 
   sv('gbpPost',  hasNg ? '-2' : String(post1));   // -2=多店舗NG
   sv('gbpReply', hasNg ? '-2' : String(reply1));
@@ -1678,16 +1678,19 @@ function calcScore(v) {
   // 多店舗NG(-2)チェック
   const gbpMultiNg = gbpPost === -2 || gbpReply === -2 || gbpDesc === -2;
 
+  const gbpStoreCount = parseInt(v.gbpStoreCount)||1;
+
   if (gbpMultiNg) {
     gbpScore=0; gbpRating='×';
-    const storeCount = parseInt(v.gbpStoreCount)||1;
-    gbpComment = `【${storeCount}店舗】×条件の店舗があるため全体評価×。各店舗のポスト・返信・構築を確認してください。`;
+    gbpComment = `【${gbpStoreCount}店舗】×条件の店舗があるため全体評価×。各店舗のポスト・返信・構築を確認してください。`;
   } else if (gbpMode === 'single') {
+    // 1〜5店舗モード：hidden値（chkGbpAllで設定済み）で計算
     const r = calcGbpSingle(
       parseFloat(v.gbpReviews)||0, parseFloat(v.gbpRating)||0, parseFloat(v.gbpPhotos)||0,
       parseInt(v.gbpReply)||0, parseInt(v.gbpDesc)||0, parseInt(v.gbpPost)||0
     );
-    gbpScore=r.score; gbpRating=r.rating; gbpComment=r.comment;
+    const prefix = gbpStoreCount > 1 ? `【${gbpStoreCount}店舗・全店舗クリア】` : '';
+    gbpScore=r.score; gbpRating=r.rating; gbpComment=prefix+r.comment;
   } else {
     const total   = parseInt(v.gbpTotalStores)||0;
     const ngPost  = parseInt(v.gbpNgPost)||0;
