@@ -1982,7 +1982,11 @@ function buildPriorities(items) {
   const priorityWeight = name => name === 'Googleビジネスプロフィール' ? -5 : 0;
   const low = items.filter(i => i.rating === '×').sort((a,b) => (b.max + priorityWeight(b.name)) - (a.max + priorityWeight(a.name)));
   const mid = items.filter(i => i.rating === '△').sort((a,b) => (b.max + priorityWeight(b.name)) - (a.max + priorityWeight(a.name)));
-  return [...low, ...mid].slice(0, 5).map((item, i) => {
+
+  const gbpItem = items.find(i => i.name === 'Googleビジネスプロフィール');
+  const others = [...low, ...mid].filter(i => i.name !== 'Googleビジネスプロフィール').slice(0, 4);
+  const top5 = gbpItem ? [...others, gbpItem] : others;
+  return top5.slice(0, 5).map((item, i) => {
     const msg = msgs[item.name] || { title:item.name+'の改善', desc:item.comment };
     return { rank: i+1, ...msg };
   });
