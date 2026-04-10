@@ -1976,15 +1976,31 @@ function buildPriorities(items) {
     if (name === 'Googleビジネスプロフィール') return -5;
     return 0;
   };
-  const low = items.filter(i => i.rating === '×' && i.name !== 'ドメインパワー(DR)').sort((a,b) => b.max - a.max);
-const mid = items.filter(i => i.rating === '△' && i.name !== 'ドメインパワー(DR)').sort((a,b) => b.max - a.max);
+  const EXCLUDE = ['ドメインパワー(DR)', 'TikTok'];
+const FIXED_LAST = 'Googleビジネスプロフィール';
+const PRIORITY_SECOND = 'Instagram';
 
-const gbpItem = items.find(i => i.name === 'Googleビジネスプロフィール');
-const others = [...low, ...mid].filter(i => i.name !== 'Googleビジネスプロフィール').slice(0, 4);
+const low = items.filter(i => i.rating === '×' && !EXCLUDE.includes(i.name) && i.name !== FIXED_LAST).sort((a,b) => b.max - a.max);
+const mid = items.filter(i => i.rating === '△' && !EXCLUDE.includes(i.name) && i.name !== FIXED_LAST).sort((a,b) => b.max - a.max);
+
+let pool = [...low, ...mid];
+
+// Instagramを②固定（×でも△でも）
+const igIndex = pool.findIndex(i => i.name === PRIORITY_SECOND);
+if (igIndex > 0) {
+  const [ig] = pool.splice(igIndex, 1);
+  pool.splice(1, 0, ig); // 2番目に挿入（0始まりなのでindex=1）
+}
+
+// GBPは⑤固定
+const gbpItem = items.find(i => i.name === FIXED_LAST);
+const others = pool.slice(0, 4);
 const top5 = gbpItem ? [...others, gbpItem] : others;
+
 return top5.slice(0, 5).map((item, i) => {
   const msg = msgs[item.name] || { title:item.name+'の改善', desc:item.comment };
   return { rank: i+1, ...msg };
+});
 });
 }
 
