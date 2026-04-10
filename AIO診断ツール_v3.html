@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIO診断ツール | SHO-SAN</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --surface2: #f0f0ee;
+  --border: #e0e0dc;
+  --accent: #c8281e;
+  --accent2: #a01f16;
+  --green: #1a7a4a;
+  --yellow: #b07800;
+  --red: #c8281e;
+  --text: #1a1a1a;
+  --muted: #888880;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Noto Sans JP',sans-serif; min-height:100vh; }
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image: linear-gradient(var(--border) 1px,transparent 1px), linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:40px 40px; opacity:0.5; pointer-events:none; z-index:0;
+}
+.container { max-width:900px; margin:0 auto; padding:48px 24px; position:relative; z-index:1; }
+header { text-align:center; margin-bottom:48px; }
+.badge { display:inline-block; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--accent); border:1px solid var(--accent); padding:4px 14px; margin-bottom:20px; }
+h1 { font-size:clamp(28px,5vw,48px); font-weight:900; letter-spacing:-1px; background:linear-gradient(135deg,#1a1a1a 0%,var(--accent) 60%,var(--accent2) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:8px; }
+.subtitle { color:var(--muted); font-family:'Space Mono',monospace; font-size:12px; }
+.card { background:var(--surface); border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.06); border-radius:12px; padding:28px; margin-bottom:20px; }
+.card-title { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+.card-title::before { content:''; width:6px; height:6px; background:var(--accent); border-radius:50%; }
+.section-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--accent); text-transform:uppercase; margin-bottom:12px; margin-top:24px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.section-label:first-child { margin-top:0; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.form-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+.full { grid-column:1/-1; }
+.form-group { display:flex; flex-direction:column; gap:6px; }
+.form-group label { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:1px; color:var(--muted); text-transform:uppercase; }
+.req { color:var(--accent2); }
+.hint { font-size:10px; color:var(--muted); margin-top:2px; }
+input[type="text"], input[type="url"], input[type="number"], select { background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'Noto Sans JP',sans-serif; font-size:13px; padding:11px 14px; outline:none; width:100%; transition:border-color 0.2s; }
+input:focus, select:focus { border-color:var(--accent); }
+select { cursor:pointer; }
+input[type="number"] { font-family:'Space Mono',monospace; }
+.toggle-group { display:flex; gap:6px; flex-wrap:wrap; }
+.toggle-btn { padding:7px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--muted); font-size:12px; font-family:'Space Mono',monospace; cursor:pointer; transition:all 0.2s; }
+.toggle-btn.active { border-color:var(--accent); background:rgba(200,40,30,0.08); color:var(--accent); }
+.btn-run { width:100%; background:linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow:0 2px 8px rgba(200,40,30,0.25); color:white; border:none; border-radius:10px; padding:17px; font-family:'Space Mono',monospace; font-size:13px; font-weight:700; letter-spacing:2px; cursor:pointer; transition:opacity 0.2s,transform 0.2s; text-transform:uppercase; }
+.btn-run:hover { opacity:0.9; transform:translateY(-1px); }
+#results { display:none; }
+#results.show { display:block; animation:fadeUp 0.4s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.score-overview { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+.score-big { background:var(--surface); border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.06); border-radius:12px; padding:20px; text-align:center; }
+.score-big .num { font-family:'Space Mono',monospace; font-size:40px; font-weight:700; line-height:1; }
+.score-big .label { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted); margin-top:6px; letter-spacing:1px; }
+.score-table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:20px; }
+.score-table th { background:#f0f0ee; padding:10px 14px; text-align:left; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:1px; color:#666; text-transform:uppercase; border-bottom:2px solid var(--border); }
+.score-table td { padding:13px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.score-table tr:last-child td { border-bottom:none; }
+.clickable-row { cursor:pointer; }
+.clickable-row:hover td { background:rgba(200,40,30,0.03) !important; }
+.click-hint { font-family:'Space Mono',monospace; font-size:9px; color:var(--muted); margin-left:6px; opacity:0.6; }
+.cat-tag { font-family:'Space Mono',monospace; font-size:9px; color:var(--muted); border:1px solid var(--border); padding:2px 6px; border-radius:3px; white-space:nowrap; }
+.rating { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:7px; font-weight:700; font-size:18px; }
+.r-good       { background:rgba(30,100,220,0.12); color:#1e64dc; }
+.r-maru-light { background:rgba(30,180,200,0.12); color:#0e8fa0; }
+.r-mid        { background:rgba(74,185,120,0.15); color:#1a7a4a; }
+.r-bad        { background:rgba(200,40,30,0.12);  color:var(--red); }
+.score-num { font-family:'Space Mono',monospace; font-size:12px; white-space:nowrap; }
+.comment   { color:var(--muted); font-size:12px; line-height:1.7; }
+.priority-list { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+.priority-item { background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:10px; padding:16px 18px; display:flex; align-items:flex-start; gap:14px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+.priority-num { font-family:'Space Mono',monospace; font-size:11px; color:#fff; background:var(--accent); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.priority-content h4 { font-size:14px; font-weight:700; margin-bottom:4px; }
+.priority-content p  { font-size:12px; color:var(--muted); line-height:1.6; }
+.actions { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
+.btn-sm { flex:1; min-width:120px; text-align:center; background:var(--surface2); color:var(--text); border:1px solid var(--border); border-radius:7px; padding:10px 18px; font-family:'Space Mono',monospace; font-size:11px; cursor:pointer; transition:all 0.2s; }
+.btn-sm:hover { border-color:var(--accent); color:var(--accent); }
+.gas-section { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px; }
+.gas-row { display:flex; gap:10px; margin-bottom:8px; }
+.gas-row input { flex:1; }
+.status-msg { font-family:'Space Mono',monospace; font-size:11px; padding:7px 12px; border-radius:5px; display:none; }
+.status-ok  { background:rgba(26,122,74,0.1); color:var(--green); display:block; }
+.status-err { background:rgba(200,40,30,0.1); color:var(--red); display:block; }
+.btn-sheets { width:100%; background:rgba(26,122,74,0.06); color:var(--green); border:1px solid var(--green); border-radius:8px; padding:13px; font-family:'Space Mono',monospace; font-size:12px; cursor:pointer; transition:all 0.2s; margin-top:10px; }
+.btn-sheets:hover { background:rgba(26,122,74,0.12); }
+.btn-sheets:disabled { opacity:0.4; cursor:not-allowed; }
+.progress-wrap { background:var(--border); border-radius:99px; height:6px; margin-top:6px; }
+.progress-bar  { height:6px; border-radius:99px; transition:width 0.6s ease; }
+
+/* Modal */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; align-items:center; justify-content:center; padding:24px; }
+.modal-overlay.show { display:flex; animation:fadeIn 0.2s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:32px; max-width:560px; width:100%; max-height:80vh; overflow-y:auto; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.15); }
+.modal-close { position:absolute; top:16px; right:16px; background:var(--surface2); border:1px solid var(--border); border-radius:50%; width:32px; height:32px; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); }
+.modal-close:hover { color:var(--text); }
+.modal-title { font-size:17px; font-weight:700; margin-bottom:4px; }
+.modal-rating { font-size:12px; color:var(--muted); margin-bottom:20px; font-family:'Space Mono',monospace; }
+.modal-section { margin-bottom:18px; }
+.modal-section h4 { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+.modal-section p { font-size:13px; line-height:1.8; }
+.modal-actions { list-style:none; display:flex; flex-direction:column; gap:8px; }
+.modal-actions li { font-size:13px; line-height:1.7; padding:10px 14px; background:var(--surface2); border-radius:8px; border-left:3px solid var(--accent); }
+.modal-aio { background:rgba(200,40,30,0.04); border:1px solid rgba(200,40,30,0.2); border-radius:10px; padding:14px 16px; }
+.modal-aio p { font-size:13px; line-height:1.8; }
+
+@media(max-width:600px){ .form-grid,.form-grid-3{ grid-template-columns:1fr; } .full{ grid-column:1; } .score-overview{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div style="margin-bottom:24px">
+    <div style="font-family:'Space Mono',monospace;font-size:20px;font-weight:700;letter-spacing:-1px;color:var(--text)">/<span style="color:var(--accent)">\</span> SHO-SAN</div>
+  </div>
+  <div class="badge">AIO DIAGNOSTIC SYSTEM</div>
+  <h1>AIO診断ツール</h1>
+  <p class="subtitle">// 数値を入力するだけで自動スコアリング・APIキー不要</p>
+</header>
+
+<div class="card">
+  <div class="card-title">クライアント情報</div>
+
+  <div class="section-label">基本情報</div>
+  <div class="form-grid">
+    <div class="form-group full">
+      <label>クライアント名 <span class="req">*</span></label>
+      <input type="text" id="clientName" placeholder="例：株式会社NEO デザインホーム" />
+    </div>
+    <div class="form-group full">
+      <label>HP URL</label>
+      <input type="url" id="hpUrl" placeholder="https://example.com" />
+    </div>
+  </div>
+
+  <div class="section-label">会社規模</div>
+  <div class="form-grid">
+    <div class="form-group full">
+      <label>年間棟数</label>
+      <div class="toggle-group" id="scaleGroup">
+        <button class="toggle-btn active" data-val="tiny"  onclick="selectScale(this)">10棟未満</button>
+        <button class="toggle-btn"        data-val="small" onclick="selectScale(this)">10〜50棟</button>
+        <button class="toggle-btn"        data-val="mid"   onclick="selectScale(this)">50棟以上</button>
+        <button class="toggle-btn"        data-val="large" onclick="selectScale(this)">中堅HM</button>
+        <button class="toggle-btn"        data-val="major" onclick="selectScale(this)">大手HM</button>
+      </div>
+      <input type="hidden" id="scale" value="tiny" />
+      <span class="hint">DR目標：10棟未満=〜10　10〜50棟=10〜30　50棟以上=30〜50　中堅HM=50〜　大手HM=70〜</span>
+    </div>
+  </div>
+
+  <div class="section-label">Ahrefs数値（手入力）</div>
+  <div class="form-grid-3">
+    <div class="form-group">
+      <label>DR <span class="req">*</span></label>
+      <input type="number" id="dr" placeholder="例：55" min="0" max="100" />
+      <span class="hint">Ahrefsから入力</span>
+    </div>
+  </div>
+
+  <div class="section-label">サイト基盤（他ツール評価）</div>
+  <div class="form-grid-3">
+    <div class="form-group">
+      <label>robots.txt</label>
+      <select id="siteRobots">
+        <option value="">未評価</option>
+        <option value="◎">◎</option><option value="○">○</option>
+        <option value="△">△</option><option value="×">×</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>sitemap.xml</label>
+      <select id="siteSitemap">
+        <option value="">未評価</option>
+        <option value="◎">◎</option><option value="○">○</option>
+        <option value="△">△</option><option value="×">×</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>JSON-LD</label>
+      <select id="siteJsonld">
+        <option value="">未評価</option>
+        <option value="◎">◎</option><option value="○">○</option>
+        <option value="△">△</option><option value="×">×</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>全体評価</label>
+      <select id="siteOverall">
+        <option value="">未評価</option>
+        <option value="A">A</option><option value="B">B</option>
+        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-label">SNS（フォロワー数）</div>
+  <div class="form-grid-3">
+    <div class="form-group">
+      <label>Instagram</label>
+      <input type="number" id="igFollowers" placeholder="例：912" min="0" />
+    </div>
+    <div class="form-group">
+      <label>YouTube 登録者数</label>
+      <input type="number" id="ytSubs" placeholder="例：1985" min="0" />
+    </div>
+    <div class="form-group">
+      <label>TikTok</label>
+      <input type="number" id="ttFollowers" placeholder="例：0" min="0" />
+    </div>
+  </div>
+
+  <div class="section-label">SNS 運用状況</div>
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Instagram 投稿頻度</label>
+      <select id="igFreq">
+        <option value="0">未運用</option>
+        <option value="-1">更新停止（最新投稿なし）</option>
+        <option value="1">月1〜3回</option>
+        <option value="2">週1〜2回</option>
+        <option value="3">週3回以上</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Instagram リール</label>
+      <select id="igReel">
+        <option value="0">なし</option>
+        <option value="-1">更新停止（最新投稿なし）</option>
+        <option value="1">たまにあり</option>
+        <option value="2">定期投稿あり</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>YouTube 投稿頻度</label>
+      <select id="ytFreq">
+        <option value="0">未運用</option>
+        <option value="-1">更新停止（最新投稿なし）</option>
+        <option value="1">不定期</option>
+        <option value="2">月1〜2回</option>
+        <option value="3">週1回以上</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>TikTok 投稿頻度</label>
+      <select id="ttFreq">
+        <option value="0">未運用</option>
+        <option value="-1">更新停止（最新投稿なし）</option>
+        <option value="1">不定期</option>
+        <option value="2">月4回以上</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-label">MEO（Googleビジネスプロフィール）</div>
+  <div class="form-grid-3">
+    <div class="form-group">
+      <label>口コミ件数</label>
+      <input type="number" id="gbpReviews" placeholder="例：6" min="0" />
+    </div>
+    <div class="form-group">
+      <label>平均評価</label>
+      <input type="number" id="gbpRating" placeholder="例：3.7" min="0" max="5" step="0.1" />
+    </div>
+    <div class="form-group">
+      <label>写真枚数</label>
+      <input type="number" id="gbpPhotos" placeholder="例：30" min="0" />
+    </div>
+    <div class="form-group">
+      <label>口コミ返信</label>
+      <select id="gbpReply">
+        <option value="0">ほぼ未返信</option>
+        <option value="-1">更新停止（返信なし）</option>
+        <option value="1">一部返信</option>
+        <option value="2">ほぼ全件返信</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>会社概要・サービス説明</label>
+      <select id="gbpDesc">
+        <option value="0">なし</option>
+        <option value="1">あり</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>投稿（Googleポスト）</label>
+      <select id="gbpPost">
+        <option value="0">なし</option>
+        <option value="-1">更新停止</option>
+        <option value="1">定期投稿あり</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-label">独自コンテンツ</div>
+  <div class="form-grid">
+    <div class="form-group">
+      <label>お施主様インタビュー動画</label>
+      <select id="interviewVideo">
+        <option value="0">なし</option>
+        <option value="1">あり（1〜4本）</option>
+        <option value="2">あり（5本以上）</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>お施主様インタビュー記事</label>
+      <select id="interviewArticle">
+        <option value="0">なし</option>
+        <option value="1">あり（1〜4件）</option>
+        <option value="2">あり（5件以上）</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>FAQページ</label>
+      <select id="faq">
+        <option value="0">なし</option>
+        <option value="1">あり（簡易）</option>
+        <option value="2">あり（充実）</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>コラム・ブログ記事数</label>
+      <input type="number" id="columnCount" placeholder="例：5" min="0" />
+    </div>
+    <div class="form-group">
+      <label>コラム更新頻度</label>
+      <select id="columnFreq">
+        <option value="0">なし・停止</option>
+        <option value="1">不定期</option>
+        <option value="2">月1回以上</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>プレスリリース・メディア掲載</label>
+      <select id="pr">
+        <option value="0">なし</option>
+        <option value="-1">過去にあり（直近なし）</option>
+        <option value="1">直近1〜2件</option>
+        <option value="2">直近年3件以上</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-top:20px">
+    <button class="btn-run" onclick="runDiagnosis()" style="flex:1">▶ 診断を実行する</button>
+    <button onclick="fillTestData()" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:17px 20px;font-family:'Space Mono',monospace;font-size:11px;cursor:pointer;white-space:nowrap;transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">🧪 テストデータ</button>
+  </div>
+</div>
+
+<!-- GAS連携 -->
+<div class="gas-section" id="gasSection" style="display:none">
+  <div class="card-title" style="margin-bottom:12px">📊 スプレッドシートに保存</div>
+  <div class="status-msg" id="gasStatus"></div>
+  <button class="btn-sheets" id="sheetsBtn" onclick="saveToSheets()">📊 スプシに保存する</button>
+  <div style="margin-top:10px;text-align:center">
+    <a href="https://docs.google.com/spreadsheets/d/1zaV30PcNR5Zv-qTyxEaZdv_gsalVmMQG3iQ_v3jcmIk/edit" target="_blank" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-decoration:underline">📋 過去の診断履歴を見る</a>
+  </div>
+</div>
+
+<!-- Results -->
+<div id="results">
+  <div class="score-overview">
+    <div class="score-big">
+      <div class="num" id="rTotal" style="color:var(--red)">—</div>
+      <div class="label">TOTAL SCORE / 100</div>
+    </div>
+    <div class="score-big">
+      <div class="num" id="rDr" style="color:var(--muted)">—</div>
+      <div class="label">DOMAIN RATING</div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="score-table">
+      <thead>
+        <tr>
+          <th>大分類</th><th>項目</th><th>評価</th><th>点数</th><th>スコア</th>
+          <th>所見 <span class="click-hint">タップで詳細▸</span></th>
+        </tr>
+      </thead>
+      <tbody id="scoreBody"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">優先対策</div>
+    <div class="priority-list" id="priorityList"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-sm" onclick="copyText()">📋 テキストをコピー</button>
+    <button class="btn-sm" onclick="downloadCsv()">⬇ CSVダウンロード</button>
+    <button class="btn-sm" onclick="downloadPdf()">📄 PDFダウンロード</button>
+  </div>
+</div>
+
+<!-- 詳細モーダル -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modalOverlay').className='modal-overlay'">✕</button>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-rating" id="modalRating"></div>
+    <div class="modal-section">
+      <h4>// 現状</h4>
+      <p id="modalStatus"></p>
+    </div>
+    <div class="modal-section">
+      <h4>// 課題</h4>
+      <p id="modalIssue"></p>
+    </div>
+    <div class="modal-section">
+      <h4>// 具体アクション</h4>
+      <ul class="modal-actions" id="modalActions"></ul>
+    </div>
+    <div class="modal-section modal-aio">
+      <h4>// AIO観点</h4>
+      <p id="modalAio"></p>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+let lastResult = null;
+
+// ============================================================
+// ユーティリティ
+// ============================================================
+function selectScale(btn) {
+  document.querySelectorAll('#scaleGroup .toggle-btn').forEach(b => b.className = 'toggle-btn');
+  btn.className = 'toggle-btn active';
+  document.getElementById('scale').value = btn.getAttribute('data-val');
+}
+
+const SHARED_GAS_URL = 'https://script.google.com/macros/s/AKfycby3yqQvs861FGHiQlp7IMdbB3m4iV4Nq0QzhK-kyYK6sF9bBhhR59Y0NJfhH3jGMdsDeA/exec';
+
+function fillTestData() {
+  document.getElementById('clientName').value = 'サンプル工務店';
+  document.getElementById('hpUrl').value = 'https://example.com';
+  document.querySelectorAll('#scaleGroup .toggle-btn').forEach(b => {
+    b.className = 'toggle-btn' + (b.getAttribute('data-val') === 'small' ? ' active' : '');
+  });
+  document.getElementById('scale').value = 'small';
+  document.getElementById('dr').value = 25;
+  document.getElementById('siteRobots').value = '×';
+  document.getElementById('siteSitemap').value = '△';
+  document.getElementById('siteJsonld').value = '×';
+  document.getElementById('siteOverall').value = 'D';
+  document.getElementById('igFollowers').value = 3500;
+  document.getElementById('igFreq').value = '2';
+  document.getElementById('igReel').value = '2';
+  document.getElementById('ytSubs').value = 500;
+  document.getElementById('ytFreq').value = '2';
+  document.getElementById('ttFollowers').value = 0;
+  document.getElementById('ttFreq').value = '0';
+  document.getElementById('gbpReviews').value = 18;
+  document.getElementById('gbpRating').value = 4.1;
+  document.getElementById('gbpPhotos').value = 25;
+  document.getElementById('gbpReply').value = '1';
+  document.getElementById('gbpDesc').value = '1';
+  document.getElementById('gbpPost').value = '1';
+  document.getElementById('interviewVideo').value = '1';
+  document.getElementById('interviewArticle').value = '1';
+  document.getElementById('faq').value = '1';
+  document.getElementById('columnCount').value = 8;
+  document.getElementById('columnFreq').value = '1';
+  document.getElementById('pr').value = '1';
+}
+
+// ============================================================
+// スコアリング
+// ============================================================
+function calcScore(v) {
+  const dr           = parseFloat(v.dr) || 0;
+  const scale        = v.scale || 'tiny';
+  const igFollowers  = parseFloat(v.igFollowers) || 0;
+  const ytSubs       = parseFloat(v.ytSubs) || 0;
+  const ttFollowers  = parseFloat(v.ttFollowers) || 0;
+  const igFreq       = v.igFreq !== '' ? parseInt(v.igFreq) : 0;
+  const igReel       = v.igReel !== '' ? parseInt(v.igReel) : 0;
+  const ytFreq       = v.ytFreq !== '' ? parseInt(v.ytFreq) : 0;
+  const ttFreq       = v.ttFreq !== '' ? parseInt(v.ttFreq) : 0;
+  const gbpReviews   = parseFloat(v.gbpReviews) || 0;
+  const gbpRatingVal = parseFloat(v.gbpRating) || 0;
+  const gbpPhotos    = parseFloat(v.gbpPhotos) || 0;
+  const gbpReply     = v.gbpReply !== '' ? parseInt(v.gbpReply) : 0;
+  const gbpDesc      = parseInt(v.gbpDesc) || 0;
+  const gbpPost      = v.gbpPost !== '' ? parseInt(v.gbpPost) : 0;
+  const intVideo     = parseInt(v.interviewVideo) || 0;
+  const intArticle   = parseInt(v.interviewArticle) || 0;
+  const faq          = parseInt(v.faq) || 0;
+  const columnCount  = parseFloat(v.columnCount) || 0;
+  const columnFreq   = parseInt(v.columnFreq) || 0;
+  const pr           = v.pr !== '' ? parseInt(v.pr) : 0;
+  const siteRobots   = v.siteRobots  || '';
+  const siteSitemap  = v.siteSitemap || '';
+  const siteJsonld   = v.siteJsonld  || '';
+  const siteOverall  = v.siteOverall || '';
+
+  const items = [];
+
+  // サイト基盤
+  const gradeToScore  = g => ({'◎':10,'○':7,'△':4,'×':0,'A':10,'B':7,'C':4,'D':0,'E':0}[g] || 0);
+  const overallToRating = g => (['A','B'].includes(g) ? '◎' : g === 'C' ? '△' : g ? '×' : '×');
+  let siteScore = 0, siteRating = '×', siteComment = '';
+  if (siteOverall) {
+    siteScore = gradeToScore(siteOverall);
+    siteRating = overallToRating(siteOverall);
+    const details = [siteRobots ? 'robots.txt:'+siteRobots : null, siteSitemap ? 'sitemap:'+siteSitemap : null, siteJsonld ? 'JSON-LD:'+siteJsonld : null].filter(Boolean).join(' / ');
+    siteComment = '全体評価'+siteOverall+'。'+(details ? '（'+details+'）' : '')+(siteScore >= 8 ? 'AIクローラー対応・構造化データともに良好。' : siteScore >= 4 ? '一部対応済みだが改善余地あり。' : 'サイト基盤の整備が急務。');
+  } else {
+    siteScore = 0; siteRating = '×';
+    const details = [siteRobots ? 'robots.txt:'+siteRobots : null, siteSitemap ? 'sitemap:'+siteSitemap : null, siteJsonld ? 'JSON-LD:'+siteJsonld : null].filter(Boolean).join(' / ');
+    siteComment = details ? details+'。全体評価を入力するとスコアに反映されます。' : '未評価。他ツールで診断後に入力してください。';
+  }
+  items.push({ category:'サイト土台', name:'サイト基盤', rating:siteRating, score:siteScore, max:10, comment:siteComment });
+
+  // DR
+  let drScore = 0, drRating = '×', drComment = '';
+  if (dr === 0) {
+    drComment = 'DR未入力。Ahrefsで確認して入力してください。';
+  } else if (scale === 'tiny') {
+    if      (dr >= 10) { drRating='◎'; drComment=`DR${dr}。10棟未満の目標DR10以上を達成。`; }
+    else if (dr >= 5)  { drRating='△'; drComment=`DR${dr}。目標のDR10に近づいている。コンテンツ強化で被リンク獲得を。`; }
+    else               { drRating='×'; drComment=`DR${dr}。非常に低い状態。サイト基盤強化とPR活動が最優先。`; }
+  } else if (scale === 'small') {
+    if      (dr >= 30) { drRating='◎'; drComment=`DR${dr}。10〜50棟の目標DR30以上を達成。`; }
+    else if (dr >= 10) { drRating='△'; drComment=`DR${dr}。目標のDR30に向けて被リンク強化が必要。`; }
+    else               { drRating='×'; drComment=`DR${dr}。10〜50棟の目標に対してまだ低い。PR活動が最優先。`; }
+  } else if (scale === 'mid') {
+    if      (dr >= 50) { drRating='◎'; drComment=`DR${dr}。50棟以上の目標DR50以上を達成。`; }
+    else if (dr >= 41) { drRating='○'; drComment=`DR${dr}。目標のDR50にほぼ到達。あと一歩。`; }
+    else if (dr >= 30) { drRating='△'; drComment=`DR${dr}。目標DR30〜50の下限。PRでDR50を目指す。`; }
+    else               { drRating='×'; drComment=`DR${dr}。50棟以上の目標に対してまだ低い。`; }
+  } else if (scale === 'large') {
+    if      (dr >= 60) { drRating='◎'; drComment=`DR${dr}。中堅HMの目標DR50〜を十分達成。`; }
+    else if (dr >= 50) { drRating='○'; drComment=`DR${dr}。中堅HMの目標に到達。さらなる強化を。`; }
+    else if (dr >= 40) { drRating='△'; drComment=`DR${dr}。目標のDR50に近づいている。`; }
+    else               { drRating='×'; drComment=`DR${dr}。中堅HMの目標に対してまだ低い。`; }
+  } else if (scale === 'major') {
+    if      (dr >= 80) { drRating='◎'; drComment=`DR${dr}。大手HMの目標DR70〜を達成。`; }
+    else if (dr >= 70) { drRating='○'; drComment=`DR${dr}。大手HMの目標に到達。`; }
+    else if (dr >= 60) { drRating='△'; drComment=`DR${dr}。目標のDR70に近づいている。`; }
+    else               { drRating='×'; drComment=`DR${dr}。大手HMの目標に対してまだ低い。`; }
+  }
+  drScore = drRating === '◎' ? 10 : drRating === '○' ? 7 : drRating === '△' ? 4 : 0;
+  items.push({ category:'サイト土台', name:'ドメインパワー(DR)', rating:drRating, score:drScore, max:10, comment:drComment });
+
+  // Instagram
+  let igScore = 0, igRating = '×', igComment = '';
+  if (igFollowers === 0 && igFreq === 0) {
+    igComment = '未運用。住宅業界でInstagramは必須チャネル。早急に開始が必要。';
+  } else if (igFreq === -1) {
+    igComment = `フォロワー${igFollowers.toLocaleString()}人だが更新停止中。すぐに投稿再開が必要。`;
+  } else if (igReel !== 2) {
+    const rl = igReel === -1 ? 'リール更新停止' : igReel === 0 ? 'リールなし' : 'リールたまにあり';
+    igComment = `フォロワー${igFollowers.toLocaleString()}人だが${rl}。定期投稿（週2回以上）開始が必要。`;
+  } else {
+    let pts = 0;
+    if      (igFollowers >= 10000) pts += 8;
+    else if (igFollowers >= 5000)  pts += 6;
+    else if (igFollowers >= 3000)  pts += 5;
+    else if (igFollowers >= 1000)  pts += 3;
+    else if (igFollowers >= 500)   pts += 2;
+    else pts += 1;
+    if (igFreq === 3) pts += 6; else if (igFreq === 2) pts += 4; else if (igFreq === 1) pts += 2;
+    pts += 6; // リール定期投稿あり
+    igScore = Math.min(pts, 20);
+    igRating = igScore >= 15 ? '◎' : igScore >= 11 ? '○' : igScore >= 7 ? '△' : '×';
+    igScore = igRating === '◎' ? 20 : igRating === '○' ? 14 : igRating === '△' ? 8 : 0;
+    const fl = {'-1':'更新停止','0':'未運用','1':'月1〜3回','2':'週1〜2回','3':'週3回以上'}[String(igFreq)] || '';
+    igComment = `フォロワー${igFollowers.toLocaleString()}人。投稿頻度：${fl}。リール定期投稿あり。${igRating === '◎' ? '非常に良好な運用状態。' : igRating === '○' ? 'もう一歩で◎。フォロワー増加を。' : '強化の余地あり。'}`;
+  }
+  items.push({ category:'ALL SNS', name:'Instagram', rating:igRating, score:igScore, max:20, comment:igComment });
+
+  // YouTube
+  let ytScore = 0, ytRating = '×', ytComment = '';
+  if (ytFreq === -1) {
+    ytComment = `登録者${ytSubs.toLocaleString()}人だが更新停止中。投稿再開が必要。`;
+  } else if (ytSubs === 0 && ytFreq === 0) {
+    ytComment = '未運用。施工事例や家づくりノウハウ動画はAIに引用されやすい。';
+  } else {
+    let pts = 0;
+    if (ytSubs >= 1000) pts += 4; else if (ytSubs >= 500) pts += 3; else if (ytSubs >= 100) pts += 2; else pts += 1;
+    if (ytFreq === 3) pts += 6; else if (ytFreq === 2) pts += 4; else if (ytFreq === 1) pts += 2;
+    ytScore = Math.min(pts, 10);
+    ytRating = ytScore >= 8 ? '◎' : ytScore >= 6 ? '○' : ytScore >= 4 ? '△' : '×';
+    ytScore = ytRating === '◎' ? 10 : ytRating === '○' ? 7 : ytRating === '△' ? 4 : 0;
+    ytComment = `登録者${ytSubs.toLocaleString()}人。投稿頻度：${['未運用','不定期','月1〜2回','週1回以上'][ytFreq]}。${ytRating === '◎' ? '良好な運用状態。' : ytRating === '○' ? 'もう一歩で◎。' : '投稿頻度アップで伸びる余地あり。'}`;
+  }
+  items.push({ category:'ALL SNS', name:'YouTube', rating:ytRating, score:ytScore, max:10, comment:ytComment });
+
+  // TikTok
+  let ttScore = 0, ttRating = '×', ttComment = '';
+  if (ttFreq === -1) {
+    ttComment = `フォロワー${ttFollowers.toLocaleString()}人だが更新停止中。`;
+  } else if (ttFollowers === 0 && ttFreq === 0) {
+    ttComment = '未運用。若い世代への認知拡大に有効。';
+  } else {
+    let pts = 0;
+    if (ttFollowers >= 5000) pts += 2; else if (ttFollowers >= 1000) pts += 1;
+    if (ttFreq === 2) pts += 3; else if (ttFreq === 1) pts += 1;
+    ttScore = Math.min(pts, 5);
+    ttRating = ttScore >= 4 ? '◎' : ttScore >= 3 ? '○' : ttScore >= 2 ? '△' : '×';
+    ttScore = ttRating === '◎' ? 5 : ttRating === '○' ? 3.5 : ttRating === '△' ? 2 : 0;
+    ttComment = `フォロワー${ttFollowers.toLocaleString()}人。投稿頻度：${['未運用','不定期','月4回以上'][ttFreq]}。`;
+  }
+  items.push({ category:'ALL SNS', name:'TikTok', rating:ttRating, score:ttScore, max:5, comment:ttComment });
+
+  // GBP
+  let gbpScore = 0, gbpRating = '×', gbpComment = '';
+  const gbpPostNg  = gbpPost === 0 || gbpPost === -1;
+  const gbpReplyNg = gbpReply === 0 || gbpReply === -1;
+  if (gbpPostNg || gbpReplyNg) {
+    const reasons = [];
+    if (gbpPost === 0)   reasons.push('Googleポスト投稿なし');
+    if (gbpPost === -1)  reasons.push('Googleポスト更新停止');
+    if (gbpReply === 0)  reasons.push('口コミ返信なし');
+    if (gbpReply === -1) reasons.push('口コミ返信停止');
+    gbpComment = reasons.join('・')+'のため評価×。即対応が必要。（口コミ'+gbpReviews+'件・評価'+gbpRatingVal+'・写真'+gbpPhotos+'枚）';
+  } else {
+    let pts = 0;
+    if (gbpReviews >= 30) pts += 6; else if (gbpReviews >= 20) pts += 5; else if (gbpReviews >= 10) pts += 4; else if (gbpReviews >= 5) pts += 2; else if (gbpReviews >= 1) pts += 1;
+    if (gbpRatingVal >= 4.5) pts += 4; else if (gbpRatingVal >= 4.0) pts += 3; else if (gbpRatingVal >= 3.5) pts += 2; else if (gbpRatingVal >= 3.0) pts += 1;
+    if (gbpPhotos >= 50) pts += 4; else if (gbpPhotos >= 30) pts += 3; else if (gbpPhotos >= 10) pts += 2; else if (gbpPhotos >= 1) pts += 1;
+    if (gbpReply === 2) pts += 4; else if (gbpReply === 1) pts += 2;
+    if (gbpPost === 1) pts += 2;
+    if (gbpDesc === 1) pts += 4;
+    const raw = Math.min(Math.max(pts, 0), 20);
+    gbpRating = raw >= 16 ? '◎' : raw >= 11 ? '○' : raw >= 6 ? '△' : '×';
+    gbpScore  = gbpRating === '◎' ? 20 : gbpRating === '○' ? 14 : gbpRating === '△' ? 8 : 0;
+    gbpComment = `口コミ${gbpReviews}件（評価${gbpRatingVal}）、写真${gbpPhotos}枚。返信：${gbpReply === 2 ? 'ほぼ全件' : '一部'}。${gbpDesc ? '会社概要あり。' : '会社概要なし。'}Googleポスト：定期投稿あり。`;
+  }
+  items.push({ category:'MEO', name:'Googleビジネスプロフィール', rating:gbpRating, score:gbpScore, max:20, comment:gbpComment });
+
+  // インタビュー
+  let intScore = 0, intRating = '×', intComment = '';
+  let pts = 0;
+  if (intVideo === 2) pts += 6; else if (intVideo === 1) pts += 3;
+  if (intArticle === 2) pts += 4; else if (intArticle === 1) pts += 2;
+  intScore = Math.min(pts, 10);
+  intRating = intScore >= 8 ? '◎' : intScore >= 6 ? '○' : intScore >= 4 ? '△' : '×';
+  intScore = intRating === '◎' ? 10 : intRating === '○' ? 7 : intRating === '△' ? 4 : 0;
+  intComment = `動画：${['なし','1〜4本','5本以上'][intVideo]}、記事：${['なし','1〜4件','5件以上'][intArticle]}。${intScore >= 7 ? 'E-E-A-T観点で良好。AIに引用されやすい一次情報。' : intScore >= 4 ? 'さらに件数増加でAI引用率が向上。' : 'お施主様の声はAIが最も引用しやすいコンテンツ。制作開始が必要。'}`;
+  items.push({ category:'独自コンテンツ', name:'お施主様インタビュー', rating:intRating, score:intScore, max:10, comment:intComment });
+
+  // FAQ
+  let faqScore = 0, faqRating = '×', faqComment = '';
+  pts = faq === 2 ? 5 : faq === 1 ? 2 : 0;
+  faqRating = pts >= 5 ? '◎' : pts >= 4 ? '○' : pts >= 2 ? '△' : '×';
+  faqScore = faqRating === '◎' ? 5 : faqRating === '○' ? 3.5 : faqRating === '△' ? 2 : 0;
+  faqComment = `FAQページ：${['なし','あり（簡易）','あり（充実）'][faq]}。${faqScore >= 5 ? 'AI Overview・ChatGPTで直接引用されやすい。' : faqScore >= 2 ? 'FAQを充実させるとAI引用率が大幅向上。' : 'FAQなし。家づくりのよくある質問を記事化すべき。'}`;
+  items.push({ category:'独自コンテンツ', name:'独自コンテンツ(FAQ等)', rating:faqRating, score:faqScore, max:5, comment:faqComment });
+
+  // コラム
+  let colScore = 0, colRating = '×', colComment = '';
+  pts = 0;
+  if (columnCount >= 20) pts += 2; else if (columnCount >= 10) pts += 1;
+  if (columnFreq === 2) pts += 3; else if (columnFreq === 1) pts += 1;
+  colScore = Math.min(pts, 5);
+  colRating = colScore >= 4 ? '◎' : colScore >= 3 ? '○' : colScore >= 2 ? '△' : '×';
+  colScore = colRating === '◎' ? 5 : colRating === '○' ? 3.5 : colRating === '△' ? 2 : 0;
+  colComment = `記事数${columnCount}件、更新頻度：${['なし・停止','不定期','月1回以上'][columnFreq]}。${colScore >= 4 ? '継続的な情報発信でAI引用の土台ができている。' : colScore >= 2 ? '記事数・更新頻度を増やしてAI認知を向上。' : 'コラムはAIが情報収集する主要ソース。定期更新開始が必要。'}`;
+  items.push({ category:'独自コンテンツ', name:'コラム', rating:colRating, score:colScore, max:5, comment:colComment });
+
+  // PR
+  let prScore = 0, prRating = '×', prComment = '';
+  if (pr === 2)       { prScore=5;   prRating='◎'; prComment='直近年3件以上のメディア掲載。被リンク獲得とブランド信頼性向上に大きく貢献。'; }
+  else if (pr === 1)  { prScore=3.5; prRating='○'; prComment='直近1〜2件のメディア掲載あり。継続的なPR活動でDR向上を狙う。'; }
+  else if (pr === -1) { prScore=0;   prRating='×'; prComment='過去の掲載実績はあるが直近なし。PRTIMESで月1本配信再開が必要。'; }
+  else                { prScore=0;   prRating='×'; prComment='メディア掲載なし。PRTIMESでのプレスリリース配信でDR向上と認知拡大が期待できる。'; }
+  items.push({ category:'PR', name:'プレスリリース/メディア掲載', rating:prRating, score:prScore, max:5, comment:prComment });
+
+  const total = Math.round(items.reduce((s, i) => s + i.score, 0) * 10) / 10;
+  return { items, total };
+}
+
+// ============================================================
+// 詳細示唆モーダル
+// ============================================================
+const SUGGESTIONS = {
+  'サイト基盤': {
+    good: { status:'サイト基盤が整備されており、AIクローラーが正しくサイトを認識できる状態。', issue:'細かい最適化でさらにAI引用率を上げられる余地がある。', actions:['JSON-LDにOrganizationスキーマを追加してサイト全体の意味構造を統合する','FAQPageスキーマを実装してAI Overviewへの直接引用を狙う','sitemapの更新頻度を上げて重要ページを優先的にクロールさせる'], aio:'サイト基盤はAIに「道を教える案内板」。robots.txt・sitemap・JSON-LDが揃うとAIがサイト全体を正しく理解し、引用頻度が上がる。' },
+    mid:  { status:'一部対応済みだが、AIクローラーへの最適化が不完全な状態。', issue:'AIがサイト構造を正しく理解できず、引用されにくくなっている。', actions:['robots.txtにGPTBot・Google-Extended・PerplexityBotのAllow設定を追加する','sitemapのURLを半角に修正し、不要ページを除外する','JSON-LDにOrganizationスキーマを追加してサイト主体を明確化する'], aio:'AIクローラー（GPTBot等）がrobots.txtで明示的に許可されていないサイトは、AIに学習・引用されにくい。設定1つで改善できる即効施策。' },
+    bad:  { status:'サイト基盤がほぼ未整備で、AIにサイトの内容が正しく伝わっていない。', issue:'robots.txt・sitemap・JSON-LDが未対応のためAIにほぼ無視されている状態。', actions:['robots.txtを作成しGPTBot・Google-Extended・CCBot・PerplexityBotをAllowに設定する','Yoast SEOなどでsitemap.xmlを自動生成・定期更新する','TOPページにOrganization・LocalBusinessのJSON-LDを実装する'], aio:'サイト基盤の整備はAIO対策の最初のステップ。AIクローラーが読めないサイトはどれだけコンテンツが良くても引用されない。最優先の施策。' }
+  },
+  'ドメインパワー(DR)': {
+    good: { status:'目標DRを達成しており、AIからの引用・参照がされやすい状態。', issue:'現状維持しながらさらなる被リンク獲得でDRを伸ばしたい。', actions:['PRTIMESで月1本プレスリリースを継続配信する','建築・住宅系メディアへの記事寄稿・取材対応を積極的に行う','SNSで拡散されやすいコンテンツを作りSNS経由の被リンクを狙う'], aio:'DRはAIが参照サイトを選ぶ際の信頼性指標。DR50以上になるとAI Overviewやchatに引用される確率が大幅に上がる。' },
+    mid:  { status:'目標DRに向けて途中の状態。被リンク獲得が課題。', issue:'DRが目標値に届いていないため、AIに引用されにくい状態。', actions:['PRTIMESでプレスリリースを月1本配信し被リンクを獲得する','地域メディア・住宅系メディアへの取材対応を積極化する','YouTubeやInstagramでシェアされやすいコンテンツを作る'], aio:'AIはDRの高いサイトを優先的に引用する傾向がある。PRやメディア掲載による被リンク獲得がDR向上の最短ルート。' },
+    bad:  { status:'DRが目標値に大きく届いておらず、AIにほぼ認識されていない状態。', issue:'DRが低いとAIに引用されず、競合に埋もれてしまう。', actions:['まずサイト基盤（robots.txt・sitemap・JSON-LD）を整備する','PRTIMESに登録してプレスリリースを配信開始する','施工事例・お客様インタビューを記事化してコンテンツを増やす'], aio:'DRはAIが情報収集する際の「信頼性スコア」。低DRのサイトはほぼAIに無視される。サイト基盤を整えてからPRでDRを上げることが最優先。' }
+  },
+  'Instagram': {
+    good: { status:'フォロワー数・リール投稿ともに良好な運用状態。', issue:'エンゲージメント率のさらなる向上とAI引用数の増加が課題。', actions:['リール投稿を週3本以上に増やし「保存数」を意識したHow系コンテンツを作る','ハイライトに施工事例・お客様の声・家づくりの流れを整理する','お施主様インタビュー動画をリールで投稿しE-E-A-Tを高める'], aio:'InstagramのリールはAI Overviewに引用されやすいフォーマット。週3本以上の定期投稿でAIメンション数が増加し、HPへの流入につながる。' },
+    mid:  { status:'アカウントはあるがフォロワー数・投稿頻度が不十分。', issue:'リール投稿が少ないためAIに認識されにくく、エンゲージメントも低い。', actions:['リールを週2本以上に増やす（施工事例・ルームツアー・家づくりのポイント）','プロフィール・ハイライト・動線を整備してフォロワーをHPに誘導する','いいね・保存数を上げるためタイトルテロップと字幕を必ず入れる'], aio:'AIはInstagramの投稿頻度・エンゲージメントを参照してブランドの信頼性を判断する。リール定期投稿＋フォロワー増加でAI引用率が上がる。' },
+    bad:  { status:'リールなし・更新停止・未運用のため評価×。', issue:'リール定期投稿がないとAIに引用されず集客にもつながらない。', actions:['まずリール投稿を月4本から開始する（施工事例が最も反応が良い）','プロフィールにHP URLを設置してAIの動線を確保する','過去の施工写真をリール化するだけでも即効性あり'], aio:'InstagramのリールはAI Overviewが引用する主要ソースの1つ。リールなし・更新停止のアカウントはAIに存在しないものとして扱われる。AIは公式アカウントの最新情報を好むため、更新を再開するだけでAIの引用率が大幅に改善される。' }
+  },
+  'YouTube': {
+    good: { status:'定期投稿・登録者数ともに良好な状態。', issue:'お施主様インタビューや専門解説動画でさらにAI引用率を上げられる。', actions:['お施主様インタビュー動画を月1本以上制作する','家づくりの専門知識を解説する動画を増やしE-E-A-Tを高める','動画タイトルに地域名＋キーワードを入れてAI引用を狙う'], aio:'YouTubeの動画はAI OverviewとChatGPTが引用しやすいフォーマット。特にお施主様インタビュー・ルームツアー・専門解説は引用頻度が高い。' },
+    mid:  { status:'チャンネルはあるが投稿頻度が不十分または停止している。', issue:'動画の更新が少なくAIに認識されにくい状態。', actions:['月2本以上の定期投稿を目標に再開する','ショート動画（60秒以内）でルームツアーを投稿して再生数を増やす','お施主様インタビューをセットで制作してコンテンツの質を上げる'], aio:'YouTubeは動画とテキスト情報の両方でAIに引用される。AIは公式チャンネルの最新情報を好むため、更新を再開するだけでAI引用率が大きく改善する。月2本以上の定期投稿でAIが認識するブランドの「存在感」が大幅に向上する。' },
+    bad:  { status:'未運用または更新停止中。', issue:'YouTubeがないとAI引用の主要チャネルを失っている。', actions:['スマホだけで撮影できるルームツアーから始める','施工事例を1物件1動画でアップするだけでも効果あり','まず月2本を目標に投稿を開始する'], aio:'AIはYouTubeを主要な情報ソースとして活用している。AIは公式の最新情報を好む性質があるため、投稿を再開するだけでAIの認識・引用率が大幅に上がる。「地域×注文住宅」「施工事例」のキーワードでの動画はAI Overviewに引用されやすい。' }
+  },
+  'TikTok': {
+    good: { status:'TikTokを定期運用できている。', issue:'フォロワー増加とAI引用数のさらなる向上が課題。', actions:['施工現場のビフォーアフター動画が最も拡散されやすい','ハッシュタグに地域名＋注文住宅を必ず入れる','YouTubeショートと同じ動画を転用して効率化する'], aio:'TikTokはPerplexityやChatGPTが参照するソースの1つ。若い世代への認知拡大と同時にAIメンション数の増加が期待できる。' },
+    mid:  { status:'アカウントはあるが投稿が不定期または停止中。', issue:'投稿頻度が低くAIに認識されにくい状態。', actions:['月4本を目標に投稿頻度を上げる','YouTubeショートを転用して効率よくコンテンツを増やす','施工事例・完成内覧会の動画が効果的'], aio:'TikTokの定期投稿はAIのブランド認識を高める。AIは公式アカウントの最新情報を好むため、更新を再開するだけでAIメンション数が増加する。YouTubeと同じ動画を転用するだけでOK。' },
+    bad:  { status:'未運用または更新停止中。', issue:'TikTokがないと若い世代への認知とAI引用の機会を失っている。', actions:['優先度はInstagram・YouTubeの次。まずそちらを整備してから着手する','YouTubeショート動画をそのまま転用するだけでOK','月4本から始めてみる'], aio:'TikTokはAI引用における優先度はやや低めだが、若い施主世代（20〜30代）への認知に直結する。AIは公式の最新情報を好むため、投稿再開だけでAI認識が改善する。他SNSが整ってから着手するのがベスト。' }
+  },
+  'Googleビジネスプロフィール': {
+    good: { status:'口コミ・写真・返信・投稿が充実しており、MEO対策が良好。', issue:'さらに口コミ数を増やしGBP引用率を高めたい。', actions:['新規のお客様に口コミ依頼を仕組み化する（完工後のメール・LINE送付）','商品コンテンツ・サービス説明を充実させてGBPを「第二のHP」にする','Googleポストを週1回更新して鮮度を保つ'], aio:'GBPはAI Overviewで地域×業種のクエリに最も引用されるソース。口コミ数・評価・更新頻度が高いGBPはAIに優先引用される。' },
+    mid:  { status:'一部対応済みだが口コミ数・投稿・返信が不十分または更新が止まっている。', issue:'GBPの更新が止まりAI引用の機会を逃している。', actions:['全口コミに48時間以内に返信する仕組みを作る','Googleポストを週1回以上更新する（イベント・施工事例・お知らせ）','写真を50枚以上に増やす（施工事例・スタッフ・社内風景）'], aio:'AIは公式の最新情報を好む。GBPの更新を再開するだけで「地域×注文住宅」クエリでのAI引用率が回復する。口コミ返信・定期投稿・写真充実の3点セットが最短で効果が出る施策。' },
+    bad:  { status:'投稿なし・返信なしのため評価×。', issue:'GBPが放置状態でAIに引用されず、競合に大差をつけられている。', actions:['まず全口コミに返信する（1〜2時間で完了）','Googleポストを今日から始める（施工事例写真1枚＋コメントだけでOK）','写真を最低30枚以上アップする'], aio:'GBPの放置は地域検索でのAI引用機会をゼロにする。口コミ返信とGoogleポスト投稿は今日から無料で始められる最優先施策。即対応が必要。' }
+  },
+  'お施主様インタビュー': {
+    good: { status:'インタビュー動画・記事ともに充実しており、E-E-A-Tが高い状態。', issue:'さらに件数を増やしAI引用率を高めたい。', actions:['インタビューにQ&A形式のテキストを追加してFAQスキーマを実装する','地域名・家の特徴をタイトルに入れてAI検索への引用を狙う','YouTubeとHPの両方に掲載してAIの参照ポイントを増やす'], aio:'お施主様インタビューはE-E-A-T（経験）を証明する最強コンテンツ。AIが「実際に建てた人の声」として引用しやすい。' },
+    mid:  { status:'インタビューが少ないか、動画または記事どちらかのみの状態。', issue:'件数・形式が不十分でAI引用率が低い。', actions:['動画＋記事のセットで制作する（動画だけでは引用されにくい）','Q&A形式で「不安だったこと」「決め手」「住み心地」を必ず入れる','月1件を目標に制作スケジュールを組む'], aio:'AIはテキストと動画の両方があるインタビューを優先引用する。「動画あり＋Q&A記事あり」の形式が最もAI引用率が高い。' },
+    bad:  { status:'インタビューコンテンツがない状態。', issue:'実際の施主の声がなくE-E-A-Tが低く評価されている。', actions:['過去のお客様にLINEで動画撮影の依頼をする（5分のインタビューでOK）','「不安だったこと・決め手・住んでみて」の3問だけでも十分','まず3件制作してHPとYouTubeに掲載する'], aio:'お施主様インタビューはAIが最も引用しやすいコンテンツの1つ。「地域×注文住宅 口コミ」のクエリで直接引用される。今すぐ制作開始が必要。' }
+  },
+  '独自コンテンツ(FAQ等)': {
+    good: { status:'FAQが充実しており、AI引用の土台ができている。', issue:'FAQスキーマの実装でさらにAI引用率を上げられる。', actions:['FAQPageスキーマ（JSON-LD）を実装してAI Overviewへの直接引用を狙う','「地域×家づくり」に特化したQ&Aを50問以上に増やす','競合がカバーしていない専門的な質問を追加する'], aio:'FAQはAI Overviewに最も直接引用されるコンテンツ形式。FAQスキーマを実装するとAIが回答をそのまま引用する確率が大幅に上がる。' },
+    mid:  { status:'FAQはあるが件数・質が不十分。', issue:'FAQが少ないためAI引用の機会を逃している。', actions:['FAQを最低20問以上に増やす','「○○地域で注文住宅を建てるといくらかかる？」など地域特化の質問を追加する','FAQPageスキーマを実装してAI引用を狙う'], aio:'AIはFAQを「ユーザーの疑問への直接回答」として優先引用する。件数が多いほど多くのクエリで引用される。まず20問→50問を目指す。' },
+    bad:  { status:'FAQコンテンツがない状態。', issue:'AIが引用できる専門コンテンツがなく、競合に大差をつけられている。', actions:['まずよくある質問20問をリストアップして記事化する','「家づくりの費用」「工期」「ローン」「土地探し」が最も検索・AI引用が多いテーマ','FAQページを作成したらFAQPageスキーマを必ず実装する'], aio:'FAQがないサイトはAI検索で「答えてくれるサイト」として認識されない。FAQの作成はAIO対策の中で最もROIが高い施策の1つ。' }
+  },
+  'コラム': {
+    good: { status:'定期的にコラムを更新できており、AIの情報収集源になっている。', issue:'専門性・地域特化のコンテンツをさらに増やしてAI引用率を上げたい。', actions:['「地域×家づくりのテーマ」に特化した記事を月2本以上に増やす','競合がカバーしていないニッチなテーマを攻める','記事にFAQ形式のQ&Aセクションを追加してAI引用を狙う'], aio:'コラムはAIが情報収集する主要ソース。更新頻度が高く専門性のある記事はAI引用率が高い。特に「地域×家づくり」の一次情報はAIが優先引用する。' },
+    mid:  { status:'コラムはあるが更新が不定期または停止している。', issue:'更新頻度が低くAIに「活発なサイト」として認識されていない。', actions:['月1本以上の定期更新を再開する','過去の施工事例を記事化するだけでもコンテンツになる','タイトルに地域名＋キーワードを入れてAI引用を狙う'], aio:'AIは公式サイトの最新情報を好む性質がある。更新を再開するだけでAIに「活きているサイト」として認識され直し、引用率が大きく改善する。月1本の定期更新でもAIの評価が大きく変わる。' },
+    bad:  { status:'コラムがないか、更新が完全に停止している。', issue:'AIが引用できる専門コンテンツがなく情報源として認識されていない。', actions:['施工事例の紹介記事から始める（写真＋コメントで月2本）','「○○地域で注文住宅を建てる際の注意点」など地域特化記事が効果的','まず10記事を目標に制作してAIに「コンテンツがあるサイト」として認識させる'], aio:'コラムゼロのサイトはAIに「情報を提供できないサイト」として扱われる。まず10記事作ることでAIの認識が変わり、引用頻度が上がる。' }
+  },
+  'プレスリリース/メディア掲載': {
+    good: { status:'定期的なPR活動でメディア掲載・被リンクを獲得できている。', issue:'さらにメディア掲載数を増やしDRとAI引用率を上げたい。', actions:['PRTIMESで月1本の配信を継続する','地域の建築・住宅系メディアへの取材対応を積極化する','受賞・認定・イベントなどニュース性のある情報を積極的に発信する'], aio:'メディア掲載はDR向上の最速手段。DRが上がるとAIの引用率が連動して上がる。PRTIMESからの被リンクは特にDR向上効果が高い。' },
+    mid:  { status:'過去に掲載実績はあるが直近の活動がない。', issue:'直近のPR活動がなく被リンク獲得が止まっている。', actions:['PRTIMESに登録して月1本のプレスリリース配信を再開する','新商品・イベント・受賞など何でもネタにしてプレスリリースを書く','地域の工務店・建築業界の団体からの被リンクも有効'], aio:'AIは公式の最新情報を好む。過去の掲載は時間とともにAIの評価が下がるため、PR活動を再開するだけでAI引用率の回復が見込める。PRTIMESは1配信数万円でDR向上の費用対効果が非常に高い。' },
+    bad:  { status:'PR活動・メディア掲載が全くない状態。', issue:'メディアからの被リンクがなくDRが上がらない。', actions:['まずPRTIMESのアカウントを作成して最初の1本を配信する','「地域初のパッシブハウス」など地域×専門性のニュースが掲載されやすい','地元の新聞・テレビへのプレスリリース送付も効果的'], aio:'PR活動はDR向上とAI引用の両方に効く最も費用対効果の高い施策。PRTIMESからの被リンク1本でDRが2〜5上昇することもある。最優先で着手すべき施策。' }
+  }
+};
+
+function getRatingLevel(rating) {
+  return ['◎','○'].includes(rating) ? 'good' : rating === '△' ? 'mid' : 'bad';
+}
+
+function openModal(itemName, rating, comment) {
+  const s = SUGGESTIONS[itemName];
+  if (!s) return;
+  const data = s[getRatingLevel(rating)] || s.bad;
+  const rColor = rating === '◎' ? '#1e64dc' : rating === '○' ? '#0e8fa0' : rating === '△' ? '#1a7a4a' : '#c8281e';
+  document.getElementById('modalTitle').textContent = itemName;
+  document.getElementById('modalRating').innerHTML = '評価：<span style="color:'+rColor+';font-weight:700">'+rating+'</span>　／　'+comment;
+  document.getElementById('modalStatus').textContent = data.status;
+  document.getElementById('modalIssue').textContent = data.issue;
+  document.getElementById('modalActions').innerHTML = data.actions.map(a => '<li>→ '+a+'</li>').join('');
+  document.getElementById('modalAio').textContent = data.aio;
+  document.getElementById('modalOverlay').className = 'modal-overlay show';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').className = 'modal-overlay';
+  }
+}
+
+// ============================================================
+// 優先対策
+// ============================================================
+function buildPriorities(items) {
+  const msgs = {
+    'Googleビジネスプロフィール': { title:'GBP強化（最優先）', desc:'口コミ返信・写真追加・Googleポスト投稿を今日から開始。最短で点数が伸びる施策。' },
+    'ドメインパワー(DR)':         { title:'DR向上（被リンク獲得）', desc:'PRTIMESでのプレスリリース配信・メディア掲載でDRを目標値に引き上げる。' },
+    'サイト基盤':                  { title:'サイト基盤の整備', desc:'robots.txt・sitemap・JSON-LDを整備してAIクローラーが正しくサイトを認識できる状態にする。' },
+    'Instagram':                  { title:'Instagram強化', desc:'リール定期投稿（週2本以上）を開始。フォロワー増加とエンゲージメント改善が急務。' },
+    'YouTube':                    { title:'YouTube運用開始', desc:'施工事例・家づくりノウハウ動画を月2本以上投稿。AIに引用されやすい動画コンテンツ。' },
+    'TikTok':                     { title:'TikTok運用開始', desc:'若い世代への認知拡大。月4本以上の短尺動画投稿で認知度アップ。' },
+    'お施主様インタビュー':        { title:'お施主様インタビュー制作', desc:'動画＋記事セットで5件以上制作。AIが最も引用しやすいE-E-A-Tコンテンツ。' },
+    '独自コンテンツ(FAQ等)':      { title:'FAQページ充実', desc:'家づくりのよくある質問を20問以上整備。AI Overview・ChatGPTに直接引用される。' },
+    'コラム':                     { title:'コラム定期更新', desc:'月1本以上のペースで専門コンテンツを発信。AIの情報収集源として継続的な更新が必要。' },
+    'プレスリリース/メディア掲載': { title:'PR・メディア掲載', desc:'PRTIMESで月1本配信。被リンク獲得とDR向上に直結する。' },
+  };
+  const low = items.filter(i => i.rating === '×').sort((a,b) => b.max - a.max);
+  const mid = items.filter(i => i.rating === '△').sort((a,b) => b.max - a.max);
+  return [...low, ...mid].slice(0, 5).map((item, i) => {
+    const msg = msgs[item.name] || { title:item.name+'の改善', desc:item.comment };
+    return { rank: i+1, ...msg };
+  });
+}
+
+// ============================================================
+// メイン実行
+// ============================================================
+function runDiagnosis() {
+  const client = document.getElementById('clientName').value.trim();
+  if (!client) { alert('クライアント名を入力してください。'); return; }
+  const v = {
+    scale: document.getElementById('scale').value,
+    dr: document.getElementById('dr').value,
+    siteRobots: document.getElementById('siteRobots').value,
+    siteSitemap: document.getElementById('siteSitemap').value,
+    siteJsonld: document.getElementById('siteJsonld').value,
+    siteOverall: document.getElementById('siteOverall').value,
+    igFollowers: document.getElementById('igFollowers').value,
+    ytSubs: document.getElementById('ytSubs').value,
+    ttFollowers: document.getElementById('ttFollowers').value,
+    igFreq: document.getElementById('igFreq').value,
+    igReel: document.getElementById('igReel').value,
+    ytFreq: document.getElementById('ytFreq').value,
+    ttFreq: document.getElementById('ttFreq').value,
+    gbpReviews: document.getElementById('gbpReviews').value,
+    gbpRating: document.getElementById('gbpRating').value,
+    gbpPhotos: document.getElementById('gbpPhotos').value,
+    gbpReply: document.getElementById('gbpReply').value,
+    gbpDesc: document.getElementById('gbpDesc').value,
+    gbpPost: document.getElementById('gbpPost').value,
+    interviewVideo: document.getElementById('interviewVideo').value,
+    interviewArticle: document.getElementById('interviewArticle').value,
+    faq: document.getElementById('faq').value,
+    columnCount: document.getElementById('columnCount').value,
+    columnFreq: document.getElementById('columnFreq').value,
+    pr: document.getElementById('pr').value,
+  };
+  const result = calcScore(v);
+  const priorities = buildPriorities(result.items);
+  lastResult = { client, hpUrl: document.getElementById('hpUrl').value.trim(), v, result };
+  renderResults(client, result, priorities, v);
+}
+
+function renderResults(client, result, priorities, v) {
+  const total = result.total;
+  const totalEl = document.getElementById('rTotal');
+  totalEl.textContent = total;
+  totalEl.style.color = total >= 70 ? 'var(--green)' : total >= 40 ? 'var(--yellow)' : 'var(--red)';
+  const drEl = document.getElementById('rDr');
+  drEl.textContent = v.dr || '—';
+  drEl.style.color = v.dr >= 50 ? 'var(--green)' : v.dr >= 30 ? 'var(--yellow)' : 'var(--red)';
+
+  const tbody = document.getElementById('scoreBody');
+  tbody.innerHTML = '';
+  result.items.forEach(item => {
+    const rClass = item.rating === '◎' ? 'r-good' : item.rating === '○' ? 'r-maru-light' : item.rating === '△' ? 'r-mid' : 'r-bad';
+    const pct = item.max > 0 ? Math.round((item.score / item.max) * 100) : 0;
+    const barColor = item.rating === '◎' ? '#1e64dc' : item.rating === '○' ? '#0e8fa0' : item.rating === '△' ? '#1a7a4a' : 'var(--red)';
+    const tr = document.createElement('tr');
+    tr.className = 'clickable-row';
+    tr.onclick = () => openModal(item.name, item.rating, item.comment);
+    tr.innerHTML = `
+      <td><span class="cat-tag">${item.category}</span></td>
+      <td style="white-space:nowrap;font-weight:500">${item.name}</td>
+      <td><span class="rating ${rClass}">${item.rating}</span></td>
+      <td><span class="score-num">${item.score}/${item.max}</span></td>
+      <td style="min-width:80px"><div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${barColor}"></div></div></td>
+      <td><span class="comment">${item.comment}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const pl = document.getElementById('priorityList');
+  pl.innerHTML = '';
+  priorities.forEach(p => {
+    pl.innerHTML += `<div class="priority-item"><div class="priority-num">${p.rank}</div><div class="priority-content"><h4>${p.title}</h4><p>${p.desc}</p></div></div>`;
+  });
+
+  document.getElementById('results').className = 'show';
+  document.getElementById('gasSection').style.display = 'block';
+  document.getElementById('results').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// コピー
+function copyText() {
+  if (!lastResult) return;
+  const { client, result } = lastResult;
+  let text = `【AIO診断結果】${client}\n総合得点：${result.total}/100\n\n`;
+  result.items.forEach(i => { text += `[${i.category}] ${i.name}：${i.rating}（${i.score}/${i.max}点）\n${i.comment}\n\n`; });
+  navigator.clipboard.writeText(text).then(() => alert('コピーしました！'));
+}
+
+// CSV
+function downloadCsv() {
+  if (!lastResult) return;
+  const { client, hpUrl, result } = lastResult;
+  const rows = [['クライアント','HP URL','大分類','項目','評価','点数','配点','所見']];
+  result.items.forEach(i => { rows.push([client, hpUrl, i.category, i.name, i.rating, i.score, i.max, i.comment]); });
+  rows.push(['','','','総合点','',result.total,100,'']);
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], { type:'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `AIO診断_${client}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// スプシに保存
+async function saveToSheets() {
+  if (!lastResult) return;
+  const gasUrl = SHARED_GAS_URL;
+  const btn = document.getElementById('sheetsBtn');
+  btn.disabled = true; btn.textContent = '送信中...';
+  const { client, hpUrl, result } = lastResult;
+  try {
+    const res = await fetch(gasUrl, { method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ client, hpUrl, items:result.items, total:result.total }) });
+    const data = await res.json();
+    if (data.status === 'ok') { btn.textContent = '✓ スプシに保存しました！'; }
+    else { throw new Error(data.message || '不明なエラー'); }
+  } catch(e) {
+    alert('スプシへの保存に失敗しました: ' + e.message);
+    btn.textContent = '📊 スプシに保存する';
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => { btn.textContent = '📊 スプシに保存する'; }, 3000);
+  }
+}
+
+// PDF
+function downloadPdf() {
+  if (!lastResult) return;
+  const { client, result } = lastResult;
+  const score = result.total;
+  const sc = score >= 70 ? '#1a7a4a' : score >= 40 ? '#b07800' : '#c8281e';
+
+  const rows = result.items.map(item => {
+    const rc = item.rating === '◎' ? '#1e64dc' : item.rating === '○' ? '#0e8fa0' : item.rating === '△' ? '#1a7a4a' : '#c8281e';
+    const rb = item.rating === '◎' ? '#e8f0fe' : item.rating === '○' ? '#e0f7fa' : item.rating === '△' ? '#e8f5ee' : '#fdecea';
+
+    // 示唆データ
+    const sg = SUGGESTIONS[item.name];
+    const level = (item.rating === '◎' || item.rating === '○') ? 'good' : item.rating === '△' ? 'mid' : 'bad';
+    const sd = sg ? (sg[level] || sg.bad) : null;
+
+    const sgHtml = sd
+      ? '<tr><td colspan="5" style="padding:0 0 14px 0;border-bottom:2px solid #e0e0dc">'
+        + '<div style="background:#f7f7f5;border-radius:8px;padding:12px 14px;font-size:11px;line-height:1.8;margin-top:4px">'
+        + '<table style="width:100%;border-collapse:collapse;margin-bottom:8px"><tr valign="top">'
+        + '<td style="width:50%;padding-right:8px;border:none"><span style="color:#c8281e;font-weight:700">現状</span><br>' + sd.status + '</td>'
+        + '<td style="width:50%;border:none"><span style="color:#c8281e;font-weight:700">課題</span><br>' + sd.issue + '</td>'
+        + '</tr></table>'
+        + '<div style="margin-bottom:8px"><span style="color:#c8281e;font-weight:700">具体アクション</span><br>'
+        + sd.actions.map(a => '→ ' + a).join('<br>') + '</div>'
+        + '<div style="background:rgba(200,40,30,0.05);border-left:3px solid #c8281e;padding:8px 10px;border-radius:4px">'
+        + '<span style="color:#c8281e;font-weight:700">AIO観点</span><br>' + sd.aio + '</div>'
+        + '</div></td></tr>'
+      : '';
+
+    return '<tr style="border-bottom:1px solid #e8e8e4">'
+      + '<td style="padding:9px 8px"><span style="font-size:9px;color:#888;border:1px solid #ddd;padding:1px 5px;border-radius:3px;white-space:nowrap">' + item.category + '</span></td>'
+      + '<td style="padding:9px 8px;font-weight:600">' + item.name + '</td>'
+      + '<td style="padding:9px 8px"><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-weight:700;font-size:14px;background:' + rb + ';color:' + rc + '">' + item.rating + '</span></td>'
+      + '<td style="padding:9px 8px;font-family:monospace;text-align:center">' + item.score + '/' + item.max + '</td>'
+      + '<td style="padding:9px 8px;color:#555;font-size:11px">' + item.comment + '</td>'
+      + '</tr>' + sgHtml;
+  }).join('');
+
+  const priorities = Array.from(document.querySelectorAll('#priorityList .priority-item'))
+    .map((el,i) => (i+1)+'. '+el.querySelector('h4').textContent+'：'+el.querySelector('p').textContent)
+    .join('<br>');
+  const today = new Date().toLocaleDateString('ja-JP');
+  const year  = new Date().getFullYear();
+
+  const html = '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>AIO診断_' + client + '</title>'
+    + '<style>@page{margin:12mm 10mm}*{box-sizing:border-box;margin:0;padding:0}'
+    + 'body{font-family:Hiragino Sans,sans-serif;font-size:12px;color:#1a1a1a;background:#fff}'
+    + '.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #c8281e}'
+    + 'h1{font-size:20px;font-weight:900;margin-bottom:4px}'
+    + '.score-box{text-align:center;background:#f7f7f5;border:1px solid #e0e0dc;border-radius:8px;padding:10px 18px}'
+    + '.num{font-size:34px;font-weight:900;color:' + sc + ';line-height:1}'
+    + '.lbl{font-size:10px;color:#888;margin-top:2px}'
+    + 'table{width:100%;border-collapse:collapse;margin-bottom:14px}'
+    + 'th{background:#f0f0ee;padding:8px;font-size:10px;color:#666;text-align:left;border-bottom:2px solid #e0e0dc}'
+    + '.summary{background:#f7f7f5;border-left:3px solid #c8281e;padding:12px 14px;border-radius:4px;margin-bottom:14px}'
+    + '.summary h3{font-size:11px;color:#c8281e;margin-bottom:6px}'
+    + '.summary p{font-size:12px;line-height:1.8}'
+    + '.footer{text-align:center;font-size:10px;color:#aaa;margin-top:12px;padding-top:10px;border-top:1px solid #e0e0dc}'
+    + '</style></head><body>'
+    + '<div class="header"><div>'
+    + '<p style="font-size:10px;color:#888;margin-bottom:4px">SHO-SAN　AIO診断レポート</p>'
+    + '<p style="font-size:11px;color:#888;margin-bottom:4px">平素より大変お世話になっております。<br>このたびはAIO診断をご依頼いただき、誠にありがとうございます。<br>診断結果をご報告申し上げます。</p>'
+    + '<h1>' + client + ' 御中</h1>'
+    + '<p style="font-size:11px;color:#888">診断日：' + today + '</p>'
+    + '</div><div class="score-box">'
+    + '<div class="num">' + score + '<span style="font-size:14px;color:#aaa">/100</span></div>'
+    + '<div class="lbl">TOTAL SCORE</div>'
+    + '</div></div>'
+    + '<table><thead><tr><th>大分類</th><th>項目</th><th>評価</th><th style="text-align:center">点数</th><th>所見</th></tr></thead>'
+    + '<tbody>' + rows + '</tbody></table>'
+    + '<div class="summary"><h3>// 優先対策</h3><p>' + priorities + '</p></div>'
+    + '<div class="footer">SHO-SAN　AIO診断ツール　©' + year + '</div>'
+    + '</body></html>';
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'AIO診断_' + client + '_' + new Date().toISOString().slice(0,10) + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  alert('ダウンロードしたHTMLファイルをChromeで開いて\nCmd+P → PDFとして保存 でPDFになります！');
+}
+</script>
+</body>
+</html>
